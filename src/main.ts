@@ -3,8 +3,10 @@ import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet'
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
+
   const app = await NestFactory.create(AppModule);
 
   app.setGlobalPrefix('api')
@@ -12,7 +14,18 @@ async function bootstrap() {
   app.use(helmet())
 
   app.use(cookieParser())
-  const swagger= new DocumentBuilder().setVersion('1.0').build()
+
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist:true,
+    forbidNonWhitelisted:true
+  }))
+
+  const swagger= new DocumentBuilder()
+  .setTitle(' Scout Talent ')
+  .setVersion('1.0')
+  .addSecurity('bearer' , { type : "http" , scheme:'bearer'})
+  .addBearerAuth()
+  .build()
 
   const document= SwaggerModule.createDocument(app,swagger)
 

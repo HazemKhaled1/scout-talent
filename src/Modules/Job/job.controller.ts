@@ -11,6 +11,7 @@ import { AuthGuard } from "../auth/guards/AuthUser.guard";
 import { currentUser } from "../auth/decorator/currentUser.decorator";
 import { JobStatus, JobType, WorkMode } from "src/utils/Enums/job.enum";
 import { jobStatusDTO } from "./dto/statusJob.dto";
+import { ApiSecurity } from "@nestjs/swagger";
 
 @Controller()
 export class JobController{
@@ -22,6 +23,7 @@ export class JobController{
     @Post('createJob')
     @Roles(RoleUser.COMPANY)
     @UseGuards(AuthGuard)
+    @ApiSecurity('bearer')
     public async CreateJob(
         @Body() body:addJobDTO, 
         @currentUser() company:JwtPayloadType 
@@ -32,6 +34,7 @@ export class JobController{
     @Get('allJob')
     @Roles(RoleUser.APPLICANT)
     @UseGuards(AuthGuard)
+    @ApiSecurity('bearer')
     public async GetAllJobs(){
         return await this.jobService.getAllJob()
     }
@@ -39,6 +42,7 @@ export class JobController{
     @Get('company/jobs')
     @Roles(RoleUser.COMPANY)
     @UseGuards(AuthGuard)
+    @ApiSecurity('bearer')
     public async GetAllJobsByCompany(
         @currentUser() company: JwtPayloadType,
         @Query('q') q?:JobStatus,
@@ -49,6 +53,7 @@ export class JobController{
     @Get('company/jobsApply')
     @Roles(RoleUser.COMPANY)
     @UseGuards(AuthGuard)
+    @ApiSecurity('bearer')
     public async GetAllJobsByCompanyApply(
         @currentUser() company: JwtPayloadType,
         @Query('q') q?:string,
@@ -67,6 +72,7 @@ export class JobController{
     @Post('applyJob/:jobId/:cvId')
     @Roles(RoleUser.APPLICANT)
     @UseGuards(AuthGuard)
+    @ApiSecurity('bearer')
     public async applyJob(
         @currentUser() user:JwtPayloadType, 
         @Param('jobId',ParseIntPipe) jobId:number,
@@ -79,6 +85,7 @@ export class JobController{
     @Delete('company/jobs/:id')
     @Roles(RoleUser.COMPANY)
     @UseGuards(AuthGuard)
+    @ApiSecurity('bearer')
     public async deleteJob(
         @currentUser() company:JwtPayloadType,
         @Param('id',ParseIntPipe) id: number
@@ -89,6 +96,7 @@ export class JobController{
     @Put('company/jobs/:id')
     @Roles(RoleUser.COMPANY)
     @UseGuards(AuthGuard)
+    @ApiSecurity('bearer')
     public async updateJob(
         @currentUser() company: JwtPayloadType,
         @Param('id',ParseIntPipe) id: number,
@@ -100,6 +108,7 @@ export class JobController{
     @Get('screenCV/:jobId/:userId')
     @Roles(RoleUser.COMPANY)
     @UseGuards(AuthGuard)
+    @ApiSecurity('bearer')
     public async screenCV (
         @currentUser() company : JwtPayloadType,
         @Param( 'jobId' , ParseIntPipe ) jobId : number,
@@ -111,6 +120,7 @@ export class JobController{
     @Get('rejectedCV/:jobId/:userId')
     @Roles(RoleUser.COMPANY)
     @UseGuards(AuthGuard)
+    @ApiSecurity('bearer')
     public async rejectedCV (
         @currentUser() company : JwtPayloadType,
         @Param('jobId',ParseIntPipe) jobId: number,
@@ -122,6 +132,7 @@ export class JobController{
     @Get('hiredCV/:jobId/:userId')
     @Roles(RoleUser.COMPANY)
     @UseGuards(AuthGuard)
+    @ApiSecurity('bearer')
     public async hiredCV (
         @currentUser() company : JwtPayloadType,
         @Param('jobId',ParseIntPipe) jobId: number,
@@ -133,6 +144,7 @@ export class JobController{
     @Get('applicantJobByApplicant')
     @Roles(RoleUser.APPLICANT)
     @UseGuards(AuthGuard)
+    @ApiSecurity('bearer')
     public async applicantJobByApplicant(
         @currentUser() user:JwtPayloadType,
         @Query('search') search?: string,
@@ -147,6 +159,7 @@ export class JobController{
     @Get('company/dashboard-stats')
     @Roles(RoleUser.COMPANY)
     @UseGuards(AuthGuard)
+    @ApiSecurity('bearer')
     public async dashboardStatistics (
         @currentUser() company:JwtPayloadType
     ){
@@ -155,6 +168,7 @@ export class JobController{
     @Post('company/jobs/:jobId/status')
     @Roles(RoleUser.COMPANY)
     @UseGuards(AuthGuard)
+    @ApiSecurity('bearer')
     public async jobStatus(
         @currentUser() company:JwtPayloadType,
         @Param("jobId" , ParseIntPipe ) jobId : number,

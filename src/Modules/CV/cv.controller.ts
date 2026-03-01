@@ -7,6 +7,8 @@ import { Roles } from "../auth/decorator/user_role.decorator";
 import { RoleUser } from "src/utils/Enums/user.enum";
 import { AuthGuard } from "../auth/guards/AuthUser.guard";
 import { currentUser } from "../auth/decorator/currentUser.decorator";
+import { ApiBody, ApiConsumes, ApiSecurity } from "@nestjs/swagger";
+import { uploadImageDTO } from "./dto/cvUpload.dto";
 
 @Controller()
 export class CVController{
@@ -17,6 +19,9 @@ export class CVController{
     @Roles(RoleUser.APPLICANT)
     @UseGuards(AuthGuard)
     @UseInterceptors(FileInterceptor('cv'))
+    @ApiSecurity('bearer')
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({ type: uploadImageDTO})
     public async uploadCV(
         @currentUser() user : JwtPayloadType,
         @UploadedFile() file:Express.Multer.File

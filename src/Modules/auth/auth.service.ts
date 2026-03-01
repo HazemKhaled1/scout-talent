@@ -108,7 +108,6 @@ export class AuthService{
         return {accessToken:newAccessToken}
     }
 
-
     public async logOut(id:number){
 
         const user = await this.userRepository.findOne({where:{id}})
@@ -120,7 +119,6 @@ export class AuthService{
 
         return true
     }
-
 
     /**
      * to verify user's email

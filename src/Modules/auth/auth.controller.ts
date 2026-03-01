@@ -10,6 +10,7 @@ import { currentUser } from "./decorator/currentUser.decorator";
 import type { JwtPayloadType } from "src/utils/type";
 import { forgetPasswordDTO } from "./dto/forget_password.dto";
 import { resetPasswordDTO } from "./dto/reset_password.dto";
+import { ApiSecurity } from "@nestjs/swagger";
 
 interface RequestWithCookies extends Request{
     cookies:{
@@ -64,6 +65,7 @@ export class AuthController{
     @Post('logOut')
     @Roles(RoleUser.APPLICANT,RoleUser.COMPANY)
     @UseGuards(AuthGuard)
+    @ApiSecurity('bearer')
     public async logOut(
         @currentUser() user :JwtPayloadType,
         @Res({ passthrough: true }) res:Response

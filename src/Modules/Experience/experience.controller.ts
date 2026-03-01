@@ -7,6 +7,7 @@ import { updateExperienceDTO } from "./dto/updateExperience.dto";
 import { Roles } from "../auth/decorator/user_role.decorator";
 import { AuthGuard } from "../auth/guards/AuthUser.guard";
 import { currentUser } from "../auth/decorator/currentUser.decorator";
+import { ApiSecurity } from "@nestjs/swagger";
 
 
 @Controller()
@@ -19,6 +20,7 @@ export class ExperienceController{
     @Post('applicant/experiences')
     @Roles(RoleUser.APPLICANT)
     @UseGuards(AuthGuard)
+    @ApiSecurity('bearer')
     public async addExperience(
         @Body() body:addExperienceDTO,
         @currentUser() user : JwtPayloadType
@@ -29,6 +31,7 @@ export class ExperienceController{
     @Put('applicant/experiences/:id')
     @Roles(RoleUser.APPLICANT)
     @UseGuards(AuthGuard)
+    @ApiSecurity('bearer')
     public async updateExperience(
         @Body() body:updateExperienceDTO ,
         @Param('id' , ParseIntPipe) id:number
@@ -39,6 +42,7 @@ export class ExperienceController{
     @Delete('applicant/experiences/:id')
     @Roles(RoleUser.APPLICANT)
     @UseGuards(AuthGuard)
+    @ApiSecurity('bearer')
     public async deleteExperience(@Param('id' , ParseIntPipe) id:number){
         return await this.experienceService.deleteExperience(id)
     }
