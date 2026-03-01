@@ -22,12 +22,12 @@ export class UserService{
     }
 
     public async basicInformation(id:number){
-
+        
         const user= await this.userRepository.findOne({ 
             where :{ id } ,
-            select : ["name","email" ,"phone" , "linkedIn_profile" , "job_title" ,"location"]
+            select : ["id","name","email" ,"phone" , "linkedIn_profile" , "job_title" ,"location"]
         })
-
+        
         return user
     }
 
