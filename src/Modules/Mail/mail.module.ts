@@ -19,7 +19,9 @@ import { MailService } from "./mail.service";
                         auth:{
                             user:config.get<string>("MAIL_USER"),
                             pass:config.get<string>("MAIL_PASSWORD")
-                        }
+                        },
+                        tls: { rejectUnauthorized: false },
+                        family: 4,
                     },
                     template:{
                         dir:join(__dirname,'templates'),
