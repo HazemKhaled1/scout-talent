@@ -7,7 +7,7 @@
     "deploy": {
         "runtime": "V2",
         "numReplicas": 1,
-        "startCommand": "npm run start:prod",
+        "startCommand": "npm run start:dev",
         "sleepApplication": false,
         "useLegacyStacker": false,
         "ipv6EgressEnabled": false,
