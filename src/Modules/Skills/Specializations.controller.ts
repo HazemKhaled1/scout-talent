@@ -8,34 +8,34 @@ import { AuthGuard } from "../auth/guards/AuthUser.guard";
 import { currentUser } from "../auth/decorator/currentUser.decorator";
 import { ApiSecurity } from "@nestjs/swagger";
 
-@Controller('users/me')
-export class SkillController{
+@Controller('companys/me')
+export class SpecializationController{
 
     constructor(
         private skillService:SkillService
     ){}
 
-    @Post('skills')
-    @Roles(RoleUser.APPLICANT)
+    @Post('specializations')
+    @Roles(RoleUser.COMPANY)
     @UseGuards(AuthGuard)
     @ApiSecurity('bearer')
-    public async addSkill(
-        @currentUser() user:JwtPayloadType,
+    public async addSpecializations(
+        @currentUser() company:JwtPayloadType,
         @Body() body:addSkillDTO
     ){
-        const data =await this.skillService.addSkill(body,user.id)
+        const data =await this.skillService.addSkill(body,company.id)
         return {data}
     }
 
-    @Delete('skills/:id')
-    @Roles(RoleUser.APPLICANT)
+    @Delete('specializations/:id')
+    @Roles(RoleUser.COMPANY)
     @UseGuards(AuthGuard)
     @ApiSecurity('bearer')
-    public async deleteSkill(
-        @currentUser() user:JwtPayloadType,
+    public async deletespecializations(
+        @currentUser() company:JwtPayloadType,
         @Param('id',ParseIntPipe) id:number
     ){
-        const data = await this.skillService.deleteSkill(id , user.id)
+        const data = await this.skillService.deleteSkill(id , company.id)
         return {data}
     }
 }

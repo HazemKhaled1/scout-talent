@@ -10,14 +10,14 @@ import { currentUser } from "../auth/decorator/currentUser.decorator";
 import { ApiSecurity } from "@nestjs/swagger";
 
 
-@Controller()
+@Controller('users/me')
 export class ExperienceController{
 
     constructor(
         private experienceService:ExperienceService
     ){}
 
-    @Post('applicant/experiences')
+    @Post('experiences')
     @Roles(RoleUser.APPLICANT)
     @UseGuards(AuthGuard)
     @ApiSecurity('bearer')
@@ -25,10 +25,11 @@ export class ExperienceController{
         @Body() body:addExperienceDTO,
         @currentUser() user : JwtPayloadType
     ){
-        return await this.experienceService.addExperience(body,user.id)
+        const data = await this.experienceService.addExperience(body,user.id)
+        return {data}
     }
 
-    @Put('applicant/experiences/:id')
+    @Put('experiences/:id')
     @Roles(RoleUser.APPLICANT)
     @UseGuards(AuthGuard)
     @ApiSecurity('bearer')
@@ -36,14 +37,16 @@ export class ExperienceController{
         @Body() body:updateExperienceDTO ,
         @Param('id' , ParseIntPipe) id:number
     ){
-        return await this.experienceService.updateExperience(body,id)
+        const data = await this.experienceService.updateExperience(body,id)
+        return {data}
     }
 
-    @Delete('applicant/experiences/:id')
+    @Delete('experiences/:id')
     @Roles(RoleUser.APPLICANT)
     @UseGuards(AuthGuard)
     @ApiSecurity('bearer')
     public async deleteExperience(@Param('id' , ParseIntPipe) id:number){
-        return await this.experienceService.deleteExperience(id)
+        const data = await this.experienceService.deleteExperience(id)
+        return {data}
     }
 }

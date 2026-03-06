@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { JobServices } from "./job.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { Job } from "./job.entity";
@@ -13,7 +13,7 @@ import { CVModule } from "../CV/cv.module";
     controllers:[JobController],
     providers:[JobServices],
     imports:[
-        UserModule,
+        forwardRef(()=>UserModule),
         JwtModule,
         CVModule,
         TypeOrmModule.forFeature([ Job, JobApplicant])

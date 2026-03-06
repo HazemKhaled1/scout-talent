@@ -1,19 +1,17 @@
-import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, ParseIntPipe, Post, Put, UseGuards } from "@nestjs/common";
 import { JobServices } from "./job.service";
 import { addJobDTO } from "./dto/addJob.dto";
 import { RoleUser } from "src/utils/Enums/user.enum";
 import { updateJobDTO } from "./dto/updateJob.dto";
 import type { JwtPayloadType } from "src/utils/type";
-import { CandidateStatus } from "src/utils/Enums/candidateStatus.enum";
 import { applyJobDTO } from "./dto/applyJob.dto";
 import { Roles } from "../auth/decorator/user_role.decorator";
 import { AuthGuard } from "../auth/guards/AuthUser.guard";
 import { currentUser } from "../auth/decorator/currentUser.decorator";
-import { JobStatus, JobType, WorkMode } from "src/utils/Enums/job.enum";
 import { jobStatusDTO } from "./dto/statusJob.dto";
-import { ApiSecurity } from "@nestjs/swagger";
+import { ApiBody, ApiSecurity } from "@nestjs/swagger";
 
-@Controller()
+@Controller('jobs')
 export class JobController{
 
     constructor(
@@ -28,7 +26,8 @@ export class JobController{
         @Body() body:addJobDTO, 
         @currentUser() company:JwtPayloadType 
     ){
-        return await this.jobService.Addjob(body,company.id)
+        const data = await this.jobService.Addjob(body,company.id)
+        return {data}
     }
 
     @Get('allJob')
@@ -36,37 +35,17 @@ export class JobController{
     @UseGuards(AuthGuard)
     @ApiSecurity('bearer')
     public async GetAllJobs(){
-        return await this.jobService.getAllJob()
+        const data =await this.jobService.getAllJob()
+        return {data}
     }
 
-    @Get('company/jobs')
-    @Roles(RoleUser.COMPANY)
-    @UseGuards(AuthGuard)
-    @ApiSecurity('bearer')
-    public async GetAllJobsByCompany(
-        @currentUser() company: JwtPayloadType,
-        @Query('q') q?:JobStatus,
-    ){
-        return await this.jobService.GetAllJobsByCompany(company.id , q)
-    }
-
-    @Get('company/jobsApply')
-    @Roles(RoleUser.COMPANY)
-    @UseGuards(AuthGuard)
-    @ApiSecurity('bearer')
-    public async GetAllJobsByCompanyApply(
-        @currentUser() company: JwtPayloadType,
-        @Query('q') q?:string,
-        @Query('s') status?:CandidateStatus
-    ){
-        return await this.jobService.GetAllJobsByCompanyApply(company.id, q, status)
-    }
 
     @Get('jobs/:id')
     public async GetJob(
         @Param('id' , ParseIntPipe) id: number
     ){
-        return await this.jobService.getJob(id)
+        const data = await this.jobService.getJob(id)
+        return {data}
     }
 
     @Post('applyJob/:jobId/:cvId')
@@ -79,10 +58,11 @@ export class JobController{
         @Param('cvId',ParseIntPipe ) cvId:number,
         @Body() body:applyJobDTO
     ){
-        return await this.jobService.applyJob(user.id ,jobId ,cvId,body)
+        const data= await this.jobService.applyJob(user.id ,jobId ,cvId,body)
+        return {data}
     }
 
-    @Delete('company/jobs/:id')
+    @Delete('/:id')
     @Roles(RoleUser.COMPANY)
     @UseGuards(AuthGuard)
     @ApiSecurity('bearer')
@@ -90,19 +70,22 @@ export class JobController{
         @currentUser() company:JwtPayloadType,
         @Param('id',ParseIntPipe) id: number
     ){
-        return await this.jobService.deleteJob( company.id , id )
+        const data = await this.jobService.deleteJob( company.id , id )
+        return {data}
     }
 
-    @Put('company/jobs/:id')
+    @Put('/:id')
     @Roles(RoleUser.COMPANY)
     @UseGuards(AuthGuard)
     @ApiSecurity('bearer')
+    @ApiBody({ type : updateJobDTO })
     public async updateJob(
         @currentUser() company: JwtPayloadType,
         @Param('id',ParseIntPipe) id: number,
         @Body() body: updateJobDTO
     ){
-        return await this.jobService.updateJob( company.id , id , body )
+        const data = await this.jobService.updateJob( company.id , id , body )
+        return {data}
     }
 
     @Get('screenCV/:jobId/:userId')
@@ -114,7 +97,8 @@ export class JobController{
         @Param( 'jobId' , ParseIntPipe ) jobId : number,
         @Param( 'userId' , ParseIntPipe ) userId : number,
     ){
-        return await this.jobService.screeningCV( company.id , jobId , userId )
+        const data = await this.jobService.screeningCV( company.id , jobId , userId )
+        return {data}
     }
 
     @Get('rejectedCV/:jobId/:userId')
@@ -126,7 +110,8 @@ export class JobController{
         @Param('jobId',ParseIntPipe) jobId: number,
         @Param('userId',ParseIntPipe) userId : number
     ){
-        return await this.jobService.rejectCV( company.id , jobId , userId )
+        const data = await this.jobService.rejectCV( company.id , jobId , userId )
+        return {data}
     }
 
     @Get('hiredCV/:jobId/:userId')
@@ -138,42 +123,20 @@ export class JobController{
         @Param('jobId',ParseIntPipe) jobId: number,
         @Param('userId',ParseIntPipe) userId : number
     ){
-        return await this.jobService.hiredCV( company.id , jobId , userId )
+        const data = await this.jobService.hiredCV( company.id , jobId , userId )
+        return {data}
     }
 
-    @Get('applicantJobByApplicant')
-    @Roles(RoleUser.APPLICANT)
-    @UseGuards(AuthGuard)
-    @ApiSecurity('bearer')
-    public async applicantJobByApplicant(
-        @currentUser() user:JwtPayloadType,
-        @Query('search') search?: string,
-        @Query('location') location?: string,
-        @Query('jobType') jobType?: JobType,
-        @Query('workMode') workMode?: WorkMode,
-
-    ){
-        return await this.jobService.jobApplicantionByUser(user.id , search ,location ,jobType , workMode)
-    }
-
-    @Get('company/dashboard-stats')
+    @Post('/:jobId/status')
     @Roles(RoleUser.COMPANY)
     @UseGuards(AuthGuard)
     @ApiSecurity('bearer')
-    public async dashboardStatistics (
-        @currentUser() company:JwtPayloadType
-    ){
-        return await this.jobService.dashboardStatisticsCompany(company.id)
-    } 
-    @Post('company/jobs/:jobId/status')
-    @Roles(RoleUser.COMPANY)
-    @UseGuards(AuthGuard)
-    @ApiSecurity('bearer')
-    public async jobStatus(
+    public async jobStatusChanging(
         @currentUser() company:JwtPayloadType,
         @Param("jobId" , ParseIntPipe ) jobId : number,
         @Body() body : jobStatusDTO
     ){
-        return await this.jobService.ChangeJobStatus(company.id , jobId , body )
+        const data = await this.jobService.ChangeJobStatus(company.id , jobId , body )
+        return {data}
     }
 }

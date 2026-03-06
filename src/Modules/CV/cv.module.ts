@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { forwardRef, Module } from "@nestjs/common";
 import { CVController } from "./cv.controller";
 import { CVService } from "./cv.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
@@ -12,7 +12,7 @@ import { JwtModule } from "@nestjs/jwt";
     controllers:[CVController],
     providers:[CVService],
     imports:[
-        UserModule,
+        forwardRef(()=>UserModule),
         JwtModule,
         TypeOrmModule.forFeature([CV]),
         MulterModule.register({

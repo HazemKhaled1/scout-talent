@@ -25,7 +25,7 @@ export class UserService{
         
         const user= await this.userRepository.findOne({ 
             where :{ id } ,
-            select : ["id","name","email" ,"phone" , "linkedIn_profile" , "job_title" ,"location"]
+            select : ["id","name","email" ,"phone" , "linkedIn_profile" , "job_title" ,"location" , 'About']
         })
         
         return user
@@ -44,16 +44,22 @@ export class UserService{
 
     public async addorupdateAbout(dto:updateoraddAboutDTO , id : number){
 
-        const company = await this.userRepository.findOne({ where :{ id } })
+        const company = await this.userRepository
+            .createQueryBuilder("company")
+            .where("company.id = :id", { id })
+            .getOne();
 
-        if(!company) throw new BadRequestException('no user found')
-
+        if(!company) throw new BadRequestException('no company found')
+        
         const { About } = dto
-        company.About= About
 
-        await this.userRepository.save(company)
+        if(About) {
+            company.About= About
+        
+            await this.userRepository.save(company)
+        }
 
-        return About
+        return company.About
     }
 
 

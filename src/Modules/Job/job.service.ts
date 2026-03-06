@@ -215,7 +215,7 @@ export class JobServices{
         jobApplicantion.status= CandidateStatus.SCREENING
         await this.jobApplicantRepository.save(jobApplicantion)
 
-        return true
+        return {message:'convert cadidate status to screening successful'}
     }
 
     public async rejectCV( companyId : number, jobId : number, userId : number ){
@@ -234,7 +234,7 @@ export class JobServices{
         jobApplicantion.status= CandidateStatus.REJECTED
         await this.jobApplicantRepository.save(jobApplicantion)
 
-        return true
+        return {message:'convert cadidate status to rejected successful'}
     }
 
     public async hiredCV(companyId : number, jobId : number, userId : number){
@@ -255,7 +255,7 @@ export class JobServices{
 
         await this.jobApplicantRepository.save(jobApplicantion)
 
-        return true
+        return {message:'convert cadidate status to hired successful'}
     }
 
     public async jobApplicantionByUser(
@@ -283,6 +283,7 @@ export class JobServices{
         if(workMode){
             jobsApply.andWhere('LOWER(job.workMode) LIKE LOWER(:workMode)', {workMode: `%${workMode}%`});
         }
+        
         return jobsApply.getMany()
     }
 

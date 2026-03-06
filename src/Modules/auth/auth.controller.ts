@@ -11,6 +11,7 @@ import type { JwtPayloadType } from "src/utils/type";
 import { forgetPasswordDTO } from "./dto/forget_password.dto";
 import { resetPasswordDTO } from "./dto/reset_password.dto";
 import { ApiSecurity } from "@nestjs/swagger";
+import { resendEmailVerify } from "./dto/resendEmailVerify.dto";
 
 interface RequestWithCookies extends Request{
     cookies:{
@@ -18,7 +19,7 @@ interface RequestWithCookies extends Request{
     }
 }
 
-@Controller()
+@Controller('auth')
 export class AuthController{
 
     constructor(
@@ -30,7 +31,8 @@ export class AuthController{
         @Body() body:registerDTO
     ){
         const response=await this.authService.register(body)
-        return response
+
+        return {data:response}
     }
 
     @Post('login')
@@ -47,8 +49,19 @@ export class AuthController{
                 maxAge: 7 * 24 * 60 * 60 * 1000
         })
 
-        return { message, accessToken}
+        return {
+            data: {message, accessToken}
+        }
+    }
 
+    @Post('resendEmailVerify')
+    public async resendEmailVerify(
+        @Body() body:resendEmailVerify
+    ){
+        const msg = await this.authService.resendEmailVerify(body)
+        return {
+            data:msg
+        }
     }
 
     @Post('refreshToken')
@@ -59,7 +72,9 @@ export class AuthController{
 
         if(!refreshToken) throw new BadRequestException('no refresh token')
 
-        return await this.authService.getAccessToken(refreshToken)
+        const data = await this.authService.getAccessToken(refreshToken)
+
+        return {data}
     }
 
     @Post('logOut')
@@ -78,30 +93,35 @@ export class AuthController{
             sameSite: 'strict'
         })
 
-        return {msg:'log out successful'}
+        return {data:{msg:'log out successful'}}
     }
 
-    @Get('user/verify-email/:id/:verificationToken')
+    @Get('verify-email/:id/:verificationToken')
     public async verifyEmail(
         @Param('id' , ParseIntPipe) id :number ,
         @Param('verificationToken') verificationToken:string
     ){
-        return await this.authService.verifyEmail(id,verificationToken)
+        const data = await this.authService.verifyEmail(id,verificationToken)
+        return {data}
     }
 
-    @Post('user/forget-password')
+    @Post('forget-password')
     public async forgetPassword(
         @Body() body:forgetPasswordDTO
     ){
-        return await this.authService.forgetPassword(body)
+        const msg = await this.authService.forgetPassword(body)
+        return { data : msg}
     }
 
-    @Post('user/reset_password/:id/:resetPasswordToken')
+    @Post('reset_password/:id/:resetPasswordToken')
     public async resetPassword(
         @Param('resetPasswordToken') resetPasswordToken:string ,
         @Param('id', ParseIntPipe) id : number,
         @Body() body : resetPasswordDTO
     ){
-        return await this.authService.resetPassword(body ,id,resetPasswordToken)
+        const msg = await this.authService.resetPassword(body ,id,resetPasswordToken)
+        return {
+            data:msg
+        }
     }
 }

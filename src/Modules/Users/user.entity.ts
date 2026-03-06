@@ -18,7 +18,7 @@ export class User{
     @Column()
     email:string
 
-    @Column()
+    @Column({select: false})
     password:string
 
     @Column()
@@ -39,16 +39,16 @@ export class User{
     @Column({nullable:true})
     About:string
     
-    @Column({nullable:true})
+    @Column({nullable:true , select: false })
     refreshToken:string
     
-    @Column({default:false})
+    @Column({default:false })
     isAccountVerified:boolean
 
-    @Column({ nullable:true })
+    @Column({ nullable:true ,select: false })
     verificationToken :string
     
-    @Column({nullable:true})
+    @Column({nullable:true ,select: false })
     resetPasswordToken: string
 
     @CreateDateColumn({type:'timestamp' , default:()=>CURRENT_TIMESTAMP})

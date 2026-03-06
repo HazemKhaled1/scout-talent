@@ -5,12 +5,13 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet'
 import { ValidationPipe } from '@nestjs/common';
 import { config } from 'dotenv';
+import { ResponseInterceptor } from './utils/interceptors/GlobalResponse.interceptor';
 config()
 async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
 
-  app.setGlobalPrefix('api')
+  app.setGlobalPrefix('api/v1')
 
   app.use(helmet())
 
@@ -20,6 +21,8 @@ async function bootstrap() {
     whitelist:true,
     forbidNonWhitelisted:true
   }))
+
+  app.useGlobalInterceptors(new ResponseInterceptor() )
 
   const swagger= new DocumentBuilder()
   .setTitle(' Scout Talent ')

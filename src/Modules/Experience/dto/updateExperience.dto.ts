@@ -1,26 +1,5 @@
-import { ApiPropertyOptional } from "@nestjs/swagger"
-import { IsOptional } from "class-validator"
+import { PartialType } from "@nestjs/swagger"
+import { addExperienceDTO } from "./addExperience.dto"
 
 
-export class updateExperienceDTO{
-
-    @IsOptional()
-    @ApiPropertyOptional()
-    title:string
-
-    @IsOptional()
-    @ApiPropertyOptional()
-    company:string
-
-    @IsOptional()
-    @ApiPropertyOptional()
-    startDate:Date
-
-    @IsOptional()
-    @ApiPropertyOptional()
-    endDate:Date
-
-    @IsOptional()
-    @ApiPropertyOptional()
-    description:string
-}
+export class updateExperienceDTO extends PartialType(addExperienceDTO) {}

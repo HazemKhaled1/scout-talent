@@ -14,9 +14,6 @@ export class SkillOrSpecializations{
     @CreateDateColumn({type:'timestamp' , default:()=>CURRENT_TIMESTAMP})
     createdAt:Date
 
-    @CreateDateColumn({type:'timestamp' , default:()=>CURRENT_TIMESTAMP, onUpdate:CURRENT_TIMESTAMP})
-    updatedAt:Date
-
     @ManyToOne(()=>User,(user)=>user.skillsORspecializations)
     userORcompany:User
 }

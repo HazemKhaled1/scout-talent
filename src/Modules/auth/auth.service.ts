@@ -13,6 +13,7 @@ import { JwtPayloadType } from "src/utils/type";
 import { forgetPasswordDTO } from "./dto/forget_password.dto";
 import { resetPasswordDTO } from "./dto/reset_password.dto";
 import { StringValue } from "ms";
+import { resendEmailVerify } from "./dto/resendEmailVerify.dto";
 
 @Injectable()
 export class AuthService{
@@ -48,7 +49,7 @@ export class AuthService{
 
         const newuser = await this.userRepository.save(Suser)
 
-        const link = `${this.config.get<string>('DOMIN')}/api/user/verify-email/${newuser.id}/${newuser.verificationToken}`
+        const link = `${this.config.get<string>('DOMIN')}/api/v1/auth/verify-email/${newuser.id}/${newuser.verificationToken}`
 
         await this.mailService.sendVerifyEmail(email,link)
 
@@ -64,7 +65,11 @@ export class AuthService{
 
         const {email , password} = dto
 
-        const user = await this.userRepository.findOne( { where :{ email } } )
+        const user = await this.userRepository
+            .createQueryBuilder('user')
+            .addSelect('user.password')
+            .where('user.email = :email', { email })
+            .getOne();
         if(!user) throw new BadRequestException('Email not found in DB ')
 
         const ckpass= await bcrypt.compare(password,user.password)
@@ -90,6 +95,29 @@ export class AuthService{
         return { message:'login successful', accessToken ,refreshToken}
     }
 
+    public async resendEmailVerify (dto:resendEmailVerify){
+
+        const { email } = dto
+
+        const user = await this.userRepository
+            .createQueryBuilder('user')
+            .addSelect('user.verificationToken')
+            .where('user.email = :email', { email })
+            .getOne();
+        if(!user) throw new BadRequestException('Email not found in DB ')
+
+        const verificationToken = randomBytes(32).toString('hex')
+        
+        user.verificationToken= verificationToken
+        await this.userRepository.save(user)
+
+        const link = `${this.config.get<string>('DOMIN')}/api/v1/auth/verify-email/${user.id}/${user.verificationToken}`
+
+        await this.mailService.sendVerifyEmail(user.email,link)
+
+        return { message:'verification email has been send , please check your email' }
+    }
+
     public async getAccessToken(refreshToken:string){
 
         const payload:JwtPayloadType = await this.jwtService.verifyAsync(refreshToken,{
@@ -97,7 +125,11 @@ export class AuthService{
             
         })
 
-        const user= await this.userRepository.findOne({where:{id:payload.id}})
+        const user= await this.userRepository
+            .createQueryBuilder('user')
+            .addSelect('user.refreshToken')
+            .where('user.id = :id', { id:payload.id })
+            .getOne()
 
         if(!user || !user.refreshToken) throw new BadRequestException('Access denied')
 
@@ -129,10 +161,14 @@ export class AuthService{
      */
     public async verifyEmail(id:number , verificationToken:string){
 
-        const user = await this.userRepository.findOne({where:{id}})
+        const user = await this.userRepository
+            .createQueryBuilder("user")
+            .addSelect("user.verificationToken")
+            .where("user.id = :id", { id })
+            .getOne();
         if(!user) throw new BadRequestException('user not found')
         
-        if(user.verificationToken ===null) throw new BadRequestException('there is no verification token')
+        if(user.verificationToken === null) throw new BadRequestException('there is no verification token')
         if(user.verificationToken !== verificationToken) throw new BadRequestException(' invalid link')
     
         user.isAccountVerified = true
@@ -152,7 +188,11 @@ export class AuthService{
     public async forgetPassword(dto:forgetPasswordDTO){
         const {email}=dto
 
-        const user= await this.userRepository.findOne({where:{email}})
+        const user= await this.userRepository
+            .createQueryBuilder("user")
+            .addSelect("user.resetPasswordToken")
+            .where("user.email = :email", { email })
+            .getOne();
 
         if(!user) throw new BadRequestException('email not in DB')
 
@@ -160,7 +200,7 @@ export class AuthService{
 
         await this.userRepository.save(user)
 
-        const link = `${this.config.get<string>('DOMIN')}/api/user/reset_password/${user.id}/${user.resetPasswordToken}`
+        const link = `${this.config.get<string>('DOMIN')}/api/v1/auth/reset_password/${user.id}/${user.resetPasswordToken}`
         
         await this.mailService.sendResetPassword(email,link)
 
@@ -180,7 +220,11 @@ export class AuthService{
         resetPasswordToken:string
     ){
         const {newPassword} = dto
-        const user= await this.userRepository.findOne({where:{id}})
+        const user= await this.userRepository
+            .createQueryBuilder("user")
+            .addSelect("user.resetPasswordToken")
+            .where("user.id = :id", { id })
+            .getOne();
 
         if (!user) throw new BadRequestException('please try again')
         

@@ -1,91 +1,106 @@
-import { Body, Controller, Get, Post, Put, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Put, Query, UseGuards } from "@nestjs/common";
 import { UserService } from "./user.service";
-import { ApiSecurity } from '@nestjs/swagger'
+import { ApiQuery, ApiSecurity } from '@nestjs/swagger'
 import type { JwtPayloadType } from "src/utils/type";
 import { Roles } from "../auth/decorator/user_role.decorator";
 import { RoleUser } from "src/utils/Enums/user.enum";
 import { AuthGuard } from "../auth/guards/AuthUser.guard";
 import { currentUser } from "../auth/decorator/currentUser.decorator";
 import { updateUserDTO } from "./dto/updateUser.dto";
-import { updateoraddAboutDTO } from "./dto/update&addAbout.dto";
+import { JobType, WorkMode } from "src/utils/Enums/job.enum";
+import { JobServices } from "../Job/job.service";
 
-@Controller()
+@Controller('user')
 export class UserController{
 
     constructor(
-        private userService : UserService
+        private userService : UserService,
+        private jobService : JobServices
     ){}
 
-
-    @Get('user/profile')
-    @Roles(RoleUser.APPLICANT , RoleUser.COMPANY)
+    @Get('/me')
+    @Roles(RoleUser.APPLICANT)
     @UseGuards(AuthGuard)
     @ApiSecurity('bearer')
     public async GetProfile(
-        @currentUser() user : JwtPayloadType
+        @currentUser() payload : JwtPayloadType
     ){
-        return await this.userService.findUser(user.id)
+        const user= await this.userService.findUser(payload.id)
+        return {
+            data:user,
+        }
     }
 
-    @Get('user/basic_info')
-    @Roles(RoleUser.APPLICANT , RoleUser.COMPANY)
+    @Get('me/basic_info')
+    @Roles(RoleUser.APPLICANT )
     @UseGuards(AuthGuard)
     @ApiSecurity('bearer')
     public async GetBasicInfo(
         @currentUser() payload : JwtPayloadType
     ){
-        return await this.userService.basicInformation(payload.id)
+        const user = await this.userService.basicInformation(payload.id)
+        return {
+            data:user,
+        }
     }
 
-    @Put('user/basic_info')
-    @Roles(RoleUser.APPLICANT , RoleUser.COMPANY)
+    @Put('me/basic_info')
+    @Roles(RoleUser.APPLICANT)
     @UseGuards(AuthGuard)
     @ApiSecurity('bearer')
     public async updateBasicInfo(
         @currentUser() payload : JwtPayloadType ,
         @Body() body : updateUserDTO
     ){
-        return await this.userService.updateProfile( body , payload.id)
+        await this.userService.updateProfile( body , payload.id)
+        return {
+            data:true
+        }
     }
 
-    @Post('company/about')
-    @Roles(RoleUser.COMPANY)
-    @UseGuards(AuthGuard)
-    @ApiSecurity('bearer')
-    public async AboutCompany(
-        @currentUser() company : JwtPayloadType ,
-        @Body() body : updateoraddAboutDTO
-    ){
-        return await this.userService.addorupdateAbout(body , company.id)
-    }
-
-    @Get('user/completion')
+    @Get('me/completion')
     @Roles(RoleUser.APPLICANT)
     @UseGuards(AuthGuard)
     @ApiSecurity('bearer')
     public async profileCompleteUser(
         @currentUser() user:JwtPayloadType
     ){
-        return await this.userService.profileCompleteUser(user.id)
+        const data = await this.userService.profileCompleteUser(user.id)
+        return {
+            data
+        }
     }
 
-    @Get('user/dashboard-stats')
+    @Get('me/dashboard-stats')
     @Roles(RoleUser.APPLICANT)
     @UseGuards(AuthGuard)
     @ApiSecurity('bearer')
     public async dashboardStatistics (
         @currentUser() user:JwtPayloadType
     ){
-        return await this.userService.dashboardStatisticsUser(user.id)
+        const data = await this.userService.dashboardStatisticsUser(user.id)
+        return {data}
     }
 
-    @Get('company/completion')
-    @Roles(RoleUser.COMPANY)
+    @Get('me/applicantJob')
+    @Roles(RoleUser.APPLICANT)
     @UseGuards(AuthGuard)
     @ApiSecurity('bearer')
-    public async profileCompleteCompany (
-        @currentUser() company:JwtPayloadType
+    @ApiQuery({ name: 'search', required: false, type: String })
+    @ApiQuery({ name: 'location', required: false, type: String })
+    @ApiQuery({ name: 'jobType', required: false, enum: JobType })
+    @ApiQuery({ name: 'workMode', required: false, enum: WorkMode })
+    public async applicantJobByApplicant(
+        @currentUser() user:JwtPayloadType,
+        @Query('search') search?: string,
+        @Query('location') location?: string,
+        @Query('jobType') jobType?: JobType,
+        @Query('workMode') workMode?: WorkMode,
+
     ){
-        return await this.userService.profileCompleteCompany(company.id)
+        const jobApply = await this.jobService.jobApplicantionByUser(user.id , search ,location ,jobType , workMode)
+        return {
+            data :jobApply
+        }
     }
 }

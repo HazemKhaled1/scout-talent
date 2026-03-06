@@ -10,12 +10,12 @@ import { currentUser } from "../auth/decorator/currentUser.decorator";
 import { ApiBody, ApiConsumes, ApiSecurity } from "@nestjs/swagger";
 import { uploadImageDTO } from "./dto/cvUpload.dto";
 
-@Controller()
+@Controller('cv')
 export class CVController{
 
     constructor(private cvService:CVService){}
 
-    @Post('/files/upload-cv')
+    @Post('/upload-cv')
     @Roles(RoleUser.APPLICANT)
     @UseGuards(AuthGuard)
     @UseInterceptors(FileInterceptor('cv'))
@@ -27,7 +27,9 @@ export class CVController{
         @UploadedFile() file:Express.Multer.File
     ){
         if(!file) throw new BadRequestException('no file upload')
-            
-        return await this.cvService.uploadCV(user.id,file.path)
+
+        const data =await this.cvService.uploadCV(user.id,file.path)
+
+        return {data}
     }
 }

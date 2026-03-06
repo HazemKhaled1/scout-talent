@@ -23,13 +23,13 @@ export class SkillService{
         if(!user)throw new BadRequestException('not user found')
 
         const skill = await this.skillRepository.findOne({where:{name}})
-        if(skill) throw new BadRequestException('name of skill already in your skills')
+        if(skill) throw new BadRequestException('this name already in your information')
 
         const NSkill=this.skillRepository.create({name ,userORcompany:user})
 
         await this.skillRepository.save(NSkill)
 
-        return {message:'add skill successful'}
+        return {message:'add successful'}
     }
 
     public async deleteSkill(id:number , userId : number){
@@ -41,11 +41,11 @@ export class SkillService{
             }
         })
 
-        if(!skill) throw new BadRequestException('no found skill')
+        if(!skill) throw new BadRequestException('no found ')
 
         await this.skillRepository.remove(skill)
 
-        return {message:'skill delete successful'}
+        return {message:'delete successful'}
     }
 
 }
