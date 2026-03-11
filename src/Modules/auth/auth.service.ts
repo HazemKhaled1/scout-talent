@@ -98,12 +98,12 @@ export class AuthService {
     const accessToken = await this.jwtService.signAsync(payload);
 
     const refreshExpires = rememberMe
-        ? this.config.get<string>('JWT_REFRESH_EXPIRES_IN')
-        : this.config.get<string>('JWT_REFRESH_EXPIRES_IN_SHORT');
+        ? this.config.get<string>('JWT_REFRESH_EXPIRES_IN')as StringValue
+        : this.config.get<string>('JWT_REFRESH_EXPIRES_IN_SHORT') as StringValue;
 
     const refreshToken = await this.jwtService.signAsync(payload, {
       secret: this.config.get<string>("JWT_Refresh_SECRET"),
-      expiresIn:refreshExpires as StringValue
+      expiresIn:refreshExpires 
     });
 
     const HrefreshToken = await bcrypt.hash(refreshToken, 10);
