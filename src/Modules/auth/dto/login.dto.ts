@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
-import { IsString , IsEmail , IsNotEmpty , Length, IsBoolean} from 'class-validator'
+import { IsString , IsEmail , IsNotEmpty , Length, IsBoolean, IsOptional} from 'class-validator'
 
 export class loginDTO{
     @IsEmail()
@@ -13,6 +13,7 @@ export class loginDTO{
     password:string
 
     @IsBoolean()
-    @ApiPropertyOptional()
-    rememberMe?: boolean;
+    @IsOptional()
+    @ApiPropertyOptional({required:false})
+    rememberMe: boolean;
 }
