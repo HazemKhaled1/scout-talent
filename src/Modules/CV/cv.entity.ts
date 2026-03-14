@@ -1,20 +1,27 @@
-import { Column, Entity, PrimaryGeneratedColumn ,CreateDateColumn, ManyToOne} from "typeorm";
-import { CURRENT_TIMESTAMP } from "src/utils/Constant/constant";
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  ManyToOne,
+} from "typeorm";
+import { CURRENT_TIMESTAMP } from "src/Shared/constants/variables";
 import { User } from "../Users/user.entity";
 
-@Entity({name:'CV'})
-export class CV{
-    
-    @PrimaryGeneratedColumn('uuid')
-    id:string
+@Entity({ name: "CV" })
+export class CV {
+  @PrimaryGeneratedColumn("uuid")
+  id: string;
 
-    @Column({nullable:false})
-    fileUrl:string
+  @Column()
+  name: string;
 
-    @CreateDateColumn({type:'timestamp' , default:()=>CURRENT_TIMESTAMP})
-    createdAt:Date
+  @Column()
+  url: string;
 
-    @ManyToOne(()=>User,(user)=>user.Cvs)
-    applicant:User
+  @CreateDateColumn({ type: "timestamp", default: () => CURRENT_TIMESTAMP })
+  createdAt: Date;
 
+  @ManyToOne(() => User, (user) => user.Cvs)
+  applicant: User;
 }

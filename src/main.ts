@@ -5,7 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet'
 import { ValidationPipe } from '@nestjs/common';
 import { config } from 'dotenv';
-import { ResponseInterceptor } from './utils/interceptors/GlobalResponse.interceptor';
+import { ResponseInterceptor } from './Shared/interceptors/GlobalResponse.interceptor';
 config()
 async function bootstrap() {
 

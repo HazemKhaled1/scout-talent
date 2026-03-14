@@ -13,17 +13,17 @@ import { AuthService } from "./auth.service";
 import { registerDTO } from "./dto/register.dto";
 import { loginDTO } from "./dto/login.dto";
 import type { Response, Request } from "express";
-import { Roles } from "./decorator/user_role.decorator";
-import { RoleUser } from "src/utils/Enums/user.enum";
+import { Roles } from "../../Shared/decorator/user_role.decorator";
 import { AuthGuard } from "./guards/AuthUser.guard";
-import { currentUser } from "./decorator/currentUser.decorator";
-import type { JwtPayloadType } from "src/utils/type";
+import { currentUser } from "../../Shared/decorator/currentUser.decorator";
 import { forgetPasswordDTO } from "./dto/forget_password.dto";
 import { resetPasswordDTO } from "./dto/reset_password.dto";
 import { ApiSecurity } from "@nestjs/swagger";
 import { resendEmailVerify } from "./dto/resendEmailVerify.dto";
 import { GoogleAuthGuard } from "./guards/google_auth.guard";
 import { userRoleDTO } from "./dto/userRole.dto";
+import { RoleUser } from "src/Shared/Enums/user.enum";
+import type { JwtPayloadType } from "src/Shared/types/JwtPayloadType";
 
 interface RequestWithCookies extends Request {
   cookies: {

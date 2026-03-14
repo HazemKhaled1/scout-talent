@@ -4,30 +4,47 @@ import { CV } from "./cv.entity";
 import { Repository } from "typeorm";
 import { UserService } from "../Users/user.service";
 @Injectable()
-export class CVService{
-    constructor(
-        @InjectRepository(CV) private cvRepository: Repository<CV>,
-        private userService : UserService,
+export class CVService {
+  constructor(
+    @InjectRepository(CV) private cvRepository: Repository<CV>,
+    private userService: UserService,
+  ) {}
 
-    ){}
+  public async uploadCV(userId: string, url: string ,name:string) {
+    const user = await this.userService.findUser(userId);
 
-    public async uploadCV(userId:string,fileUrl:string){
+    if (!user) throw new BadRequestException("user not found");
 
-        const user= await this.userService.findUser(userId)
+    const cv = this.cvRepository.create({name, url, applicant: user });
 
-        if(!user) throw new BadRequestException('user not found')
+    await this.cvRepository.save(cv);
 
-        const cv= this.cvRepository.create({fileUrl,applicant:user})
+    return { message: "cv upload successful", cvId: cv.id };
+  }
 
-        await this.cvRepository.save(cv)
+  public async getAllCVFromUser(userId: string) {
+    const user = await this.userService.findUser(userId);
 
-        return {message:"cv upload successful" ,cvId:cv.id}
-    }
+    if (!user) throw new BadRequestException("user not found");
 
-    public async findCV(id:string){
-        
-        const cv =await this.cvRepository.findOne({where:{id}})
+    const cvs = await this.cvRepository.find({where:{applicant:{id:user.id}}});
 
-        return cv
-    }
+    return {cvs};
+  }
+
+  public async deleteCV(userId: string, cvId: string) {
+    const user = await this.userService.findUser(userId);
+
+    if (!user) throw new BadRequestException("user not found");
+
+    await this.cvRepository.delete({
+        id:cvId,applicant:user
+    })
+    return {message:'delete successful'}
+  }
+  public async findCV(id: string) {
+    const cv = await this.cvRepository.findOne({ where: { id } });
+
+    return cv;
+  }
 }

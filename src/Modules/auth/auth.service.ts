@@ -3,19 +3,20 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "../Users/user.entity";
 import { Repository } from "typeorm";
 import { ConfigService } from "@nestjs/config";
-import { MailService } from "../../utils/Mail/mail.service";
+
 import { JwtService } from "@nestjs/jwt";
 import { registerDTO } from "./dto/register.dto";
 import bcrypt from "bcrypt";
 import { randomBytes } from "node:crypto";
 import { loginDTO } from "./dto/login.dto";
-import { JwtPayloadType } from "src/utils/type";
 import { forgetPasswordDTO } from "./dto/forget_password.dto";
 import { resetPasswordDTO } from "./dto/reset_password.dto";
 import { StringValue } from "ms";
 import { resendEmailVerify } from "./dto/resendEmailVerify.dto";
-import { RoleUser } from "src/utils/Enums/user.enum";
 import { userRoleDTO } from "./dto/userRole.dto";
+import { MailService } from "src/Shared/Mail/mail.service";
+import { JwtPayloadType } from "src/Shared/types/JwtPayloadType";
+import { RoleUser } from "src/Shared/Enums/user.enum";
 
 @Injectable()
 export class AuthService {

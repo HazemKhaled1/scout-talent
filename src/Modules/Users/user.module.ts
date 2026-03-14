@@ -3,7 +3,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "./user.entity";
 import { UserService } from "./user.service";
 import { UserController } from "./user.controller";
-import { MailModule } from "../../utils/Mail/mail.module";
+import { MailModule } from "src/Shared/Mail/mail.module";
 import { JobApplicant } from "../Job/job_applicant.entity";
 import { JwtModule } from "@nestjs/jwt";
 import { CompanyController } from "./company.controller";

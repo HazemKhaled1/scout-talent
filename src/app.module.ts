@@ -2,7 +2,7 @@ import { ConfigModule } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { Module } from "@nestjs/common";
 import { UserModule } from "./Modules/Users/user.module";
-import { MailModule } from "./utils/Mail/mail.module";
+import { MailModule } from "./Shared/Mail/mail.module";
 import { CVModule } from "./Modules/CV/cv.module";
 import { JobModule } from "./Modules/Job/job.module";
 import { ThrottlerModule } from "@nestjs/throttler";

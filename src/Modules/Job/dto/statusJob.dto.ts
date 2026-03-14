@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsString } from "class-validator";
-import { JobStatus } from "src/utils/Enums/job.enum";
+import { JobStatus } from "src/Shared/Enums/job.enum";
 
 export class jobStatusDTO {
 

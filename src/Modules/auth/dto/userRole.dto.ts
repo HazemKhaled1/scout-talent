@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsNotEmpty, IsString } from "class-validator";
-import { RoleUser } from "src/utils/Enums/user.enum";
+import { RoleUser } from "src/Shared/Enums/user.enum";
 
 export class userRoleDTO {
   @IsString()

@@ -3,163 +3,165 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { User } from "./user.entity";
 import { MoreThan, Repository } from "typeorm";
 import { JobApplicant } from "../Job/job_applicant.entity";
-import { CandidateStatus } from "src/utils/Enums/candidateStatus.enum";
+import { CandidateStatus } from "src/Shared/Enums/candidateStatus.enum";
 import { updateUserDTO } from "./dto/updateUser.dto";
 import { updateoraddAboutDTO } from "./dto/update&addAbout.dto";
 @Injectable()
-export class UserService{
+export class UserService {
+  constructor(
+    @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(JobApplicant)
+    private jobApplicantRepository: Repository<JobApplicant>,
+  ) {}
 
-    constructor(
-        @InjectRepository(User) private userRepository : Repository<User>,
-        @InjectRepository(JobApplicant) private jobApplicantRepository : Repository<JobApplicant>
-    ){}
+  public async findUser(id: string) {
+    const user = await this.userRepository.findOne({ where: { id } });
 
-    public async findUser(id:string){
+    return user;
+  }
 
-        const user= await this.userRepository.findOne({ where :{ id } })
+  public async basicInformation(id: string) {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      select: [
+        "id",
+        "name",
+        "email",
+        "phone",
+        "linkedIn_profile",
+        "job_title",
+        "location",
+        "About",
+      ],
+    });
 
-        return user
+    return user;
+  }
+
+  public async updateProfile(dto: updateUserDTO, id: string) {
+    const user = await this.userRepository.findOne({ where: { id } });
+
+    if (!user) throw new BadRequestException("no user found");
+
+    await this.userRepository.update(id, dto);
+
+    return true;
+  }
+
+  public async addorupdateAbout(dto: updateoraddAboutDTO, id: string) {
+    const company = await this.userRepository
+      .createQueryBuilder("company")
+      .where("company.id = :id", { id })
+      .getOne();
+
+    if (!company) throw new BadRequestException("no company found");
+
+    const { About } = dto;
+
+    if (About) {
+      company.About = About;
+
+      await this.userRepository.save(company);
     }
 
-    public async basicInformation(id:string){
-        
-        const user= await this.userRepository.findOne({ 
-            where :{ id } ,
-            select : ["id","name","email" ,"phone" , "linkedIn_profile" , "job_title" ,"location" , 'About']
-        })
-        
-        return user
-    }
+    return company.About;
+  }
 
-    public async updateProfile(dto:updateUserDTO , id:string){
+  public async profileCompleteUser(id: string) {
+    const user = await this.userRepository.findOne({
+      where: { id },
+    });
 
-        const user= await this.userRepository.findOne({ where :{ id } })
+    if (!user) throw new BadRequestException("no user found");
 
-        if(!user) throw new BadRequestException('no user found')
+    let percentage = 40;
 
-        await this.userRepository.update(id,dto)
+    const skillsCompleted = user.skillsORspecializations?.length > 0;
+    const experienceCompleted = user.experience?.length > 0;
 
-        return true
-    }
+    if (skillsCompleted) percentage += 30;
 
-    public async addorupdateAbout(dto:updateoraddAboutDTO , id : string){
+    if (experienceCompleted) percentage += 30;
 
-        const company = await this.userRepository
-            .createQueryBuilder("company")
-            .where("company.id = :id", { id })
-            .getOne();
+    return {
+      percentage,
+      sections: {
+        basicInfo: true,
+        skillsCompleted,
+        experienceCompleted,
+      },
+    };
+  }
 
-        if(!company) throw new BadRequestException('no company found')
-        
-        const { About } = dto
+  public async dashboardStatisticsUser(id: string) {
+    const user = await this.userRepository.findOne({
+      where: { id },
+    });
 
-        if(About) {
-            company.About= About
-        
-            await this.userRepository.save(company)
-        }
+    if (!user) throw new BadRequestException("no user found");
 
-        return company.About
-    }
+    const totalApplicant = await this.jobApplicantRepository.count({
+      where: {
+        applicant: { id },
+        createdAt: MoreThan(this.getDateBeforeMonths(3)),
+      },
+    });
 
+    const inReview = await this.jobApplicantRepository.count({
+      where: {
+        applicant: { id },
+        createdAt: MoreThan(this.getDateBeforeMonths(3)),
+        status: CandidateStatus.SCREENING,
+      },
+    });
 
+    const interview = await this.jobApplicantRepository.count({
+      where: {
+        applicant: { id },
+        createdAt: MoreThan(this.getDateBeforeMonths(3)),
+        status: CandidateStatus.INTERVIEW,
+      },
+    });
 
-    public async profileCompleteUser(id:string){
-        const user= await this.userRepository.findOne({
-            where:{id}
-        })
+    return {
+      totalApplicant,
+      inReview,
+      interview,
+    };
+  }
 
-        if(!user) throw new BadRequestException('no user found')
+  public async profileCompleteCompany(id: string) {
+    const company = await this.userRepository.findOne({
+      where: { id },
+    });
 
-        let percentage=40
+    if (!company) throw new BadRequestException("no user found");
 
-        const skillsCompleted = user.skillsORspecializations?.length > 0;
-        const experienceCompleted = user.experience?.length > 0;
+    let percentage = 40;
 
-        if(skillsCompleted) percentage += 30
+    const AboutCompleted = !!company.About?.trim();
+    const specializationsCompleted =
+      company.skillsORspecializations?.length > 0;
 
-        if(experienceCompleted) percentage += 30
+    if (AboutCompleted) percentage += 30;
 
-        return {
-            percentage,
-            sections:{
-                basicInfo:true,
-                skillsCompleted,
-                experienceCompleted
-            }
-        }
-    }
+    if (specializationsCompleted) percentage += 30;
 
-    public async dashboardStatisticsUser(id:string){
+    return {
+      percentage,
+      sections: {
+        basicInfo: true,
+        AboutCompleted,
+        specializationsCompleted,
+      },
+    };
+  }
 
-        const user= await this.userRepository.findOne({
-            where:{id}
-        })
+  private getDateBeforeMonths(month: number) {
+    const date = new Date();
 
-        if(!user) throw new BadRequestException('no user found')
+    date.setMonth(date.getMonth() - month);
 
-        const totalApplicant= await this.jobApplicantRepository.count({
-            where :{
-                applicant:{id},
-                createdAt:MoreThan(this.getDateBeforeMonths(3))
-            }
-        })
-
-        const inReview= await this.jobApplicantRepository.count({
-            where :{
-                applicant:{id},
-                createdAt:MoreThan(this.getDateBeforeMonths(3)),
-                status:CandidateStatus.SCREENING
-            }
-        })
-
-        const interview= await this.jobApplicantRepository.count({
-            where :{
-                applicant:{id},
-                createdAt:MoreThan(this.getDateBeforeMonths(3)),
-                status:CandidateStatus.INTERVIEW
-            }
-        })
-
-        return {
-            totalApplicant,
-            inReview,
-            interview
-        }
-    }
-
-    public async profileCompleteCompany(id:string){
-        const company= await this.userRepository.findOne({
-            where:{id}
-        })
-
-        if(!company) throw new BadRequestException('no user found')
-
-        let percentage=40
-
-        const AboutCompleted = !!company.About?.trim()
-        const specializationsCompleted = company.skillsORspecializations?.length > 0;
-        
-
-        if(AboutCompleted) percentage += 30
-
-        if(specializationsCompleted) percentage += 30
-
-        return {
-            percentage,
-            sections:{
-                basicInfo:true,
-                AboutCompleted,
-                specializationsCompleted
-            }
-        }
-    }
-
-    private getDateBeforeMonths(month:number){
-        const date= new Date()
-
-        date.setMonth(date.getMonth()-month)
-
-        return date
-    }
+    return date;
+  }
 }

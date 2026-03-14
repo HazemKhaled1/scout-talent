@@ -1,4 +1,4 @@
-import { RoleUser } from "src/utils/Enums/user.enum"
+import { RoleUser } from 'src/Shared/Enums/user.enum' 
 import { IsString , IsEmail , IsNotEmpty , Length} from 'class-validator'
 import { ApiProperty } from "@nestjs/swagger"
 

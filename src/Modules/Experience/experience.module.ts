@@ -6,7 +6,6 @@ import { ExperienceService } from "./experience.service";
 import { UserModule } from "../Users/user.module";
 import { JwtModule } from "@nestjs/jwt";
 
-
 @Module({
     controllers:[ExperienceController],
     providers:[ExperienceService],

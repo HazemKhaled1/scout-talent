@@ -4,7 +4,7 @@ import { AuthService } from "./auth.service";
 import { JwtModule } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { StringValue } from "ms";
-import { MailModule } from "../../utils/Mail/mail.module";
+import { MailModule } from "src/Shared/Mail/mail.module";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "../Users/user.entity";
 import { UserModule } from "../Users/user.module";

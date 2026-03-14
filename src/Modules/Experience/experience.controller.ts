@@ -1,52 +1,56 @@
-import { Body, Controller, Delete, Param, Post, Put, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Delete,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+} from "@nestjs/common";
 import { ExperienceService } from "./experience.service";
-import { RoleUser } from "src/utils/Enums/user.enum";
+import { RoleUser } from "src/Shared/Enums/user.enum";
 import { addExperienceDTO } from "./dto/addExperience.dto";
-import type { JwtPayloadType } from "src/utils/type";
+import type { JwtPayloadType } from "src/Shared/types/JwtPayloadType";
 import { updateExperienceDTO } from "./dto/updateExperience.dto";
-import { Roles } from "../auth/decorator/user_role.decorator";
+import { Roles } from "../../Shared/decorator/user_role.decorator";
 import { AuthGuard } from "../auth/guards/AuthUser.guard";
-import { currentUser } from "../auth/decorator/currentUser.decorator";
+import { currentUser } from "../../Shared/decorator/currentUser.decorator";
 import { ApiSecurity } from "@nestjs/swagger";
 
+@Controller("users/me")
+export class ExperienceController {
+  constructor(private experienceService: ExperienceService) {}
 
-@Controller('users/me')
-export class ExperienceController{
+  @Post("experiences")
+  @Roles(RoleUser.APPLICANT)
+  @UseGuards(AuthGuard)
+  @ApiSecurity("bearer")
+  public async addExperience(
+    @Body() body: addExperienceDTO,
+    @currentUser() user: JwtPayloadType,
+  ) {
+    const data = await this.experienceService.addExperience(body, user.id);
+    return { data };
+  }
 
-    constructor(
-        private experienceService:ExperienceService
-    ){}
+  @Put("experiences/:id")
+  @Roles(RoleUser.APPLICANT)
+  @UseGuards(AuthGuard)
+  @ApiSecurity("bearer")
+  public async updateExperience(
+    @Body() body: updateExperienceDTO,
+    @Param("id") id: string,
+  ) {
+    const data = await this.experienceService.updateExperience(body, id);
+    return { data };
+  }
 
-    @Post('experiences')
-    @Roles(RoleUser.APPLICANT)
-    @UseGuards(AuthGuard)
-    @ApiSecurity('bearer')
-    public async addExperience(
-        @Body() body:addExperienceDTO,
-        @currentUser() user : JwtPayloadType
-    ){
-        const data = await this.experienceService.addExperience(body,user.id)
-        return {data}
-    }
-
-    @Put('experiences/:id')
-    @Roles(RoleUser.APPLICANT)
-    @UseGuards(AuthGuard)
-    @ApiSecurity('bearer')
-    public async updateExperience(
-        @Body() body:updateExperienceDTO ,
-        @Param('id') id:string
-    ){
-        const data = await this.experienceService.updateExperience(body,id)
-        return {data}
-    }
-
-    @Delete('experiences/:id')
-    @Roles(RoleUser.APPLICANT)
-    @UseGuards(AuthGuard)
-    @ApiSecurity('bearer')
-    public async deleteExperience(@Param('id') id:string){
-        const data = await this.experienceService.deleteExperience(id)
-        return {data}
-    }
+  @Delete("experiences/:id")
+  @Roles(RoleUser.APPLICANT)
+  @UseGuards(AuthGuard)
+  @ApiSecurity("bearer")
+  public async deleteExperience(@Param("id") id: string) {
+    const data = await this.experienceService.deleteExperience(id);
+    return { data };
+  }
 }
