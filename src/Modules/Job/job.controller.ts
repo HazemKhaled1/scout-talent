@@ -91,45 +91,6 @@ export class JobController {
     return { data };
   }
 
-  @Get("screenCV/:jobId/:userId")
-  @Roles(RoleUser.COMPANY)
-  @UseGuards(AuthGuard)
-  @ApiSecurity("bearer")
-  public async screenCV(
-    @currentUser() company: JwtPayloadType,
-    @Param("jobId") jobId: string,
-    @Param("userId") userId: string,
-  ) {
-    const data = await this.jobService.screeningCV(company.id, jobId, userId);
-    return { data };
-  }
-
-  @Get("rejectedCV/:jobId/:userId")
-  @Roles(RoleUser.COMPANY)
-  @UseGuards(AuthGuard)
-  @ApiSecurity("bearer")
-  public async rejectedCV(
-    @currentUser() company: JwtPayloadType,
-    @Param("jobId") jobId: string,
-    @Param("userId") userId: string,
-  ) {
-    const data = await this.jobService.rejectCV(company.id, jobId, userId);
-    return { data };
-  }
-
-  @Get("hiredCV/:jobId/:userId")
-  @Roles(RoleUser.COMPANY)
-  @UseGuards(AuthGuard)
-  @ApiSecurity("bearer")
-  public async hiredCV(
-    @currentUser() company: JwtPayloadType,
-    @Param("jobId") jobId: string,
-    @Param("userId") userId: string,
-  ) {
-    const data = await this.jobService.hiredCV(company.id, jobId, userId);
-    return { data };
-  }
-
   @Post("/:jobId/status")
   @Roles(RoleUser.COMPANY)
   @UseGuards(AuthGuard)

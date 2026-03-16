@@ -12,10 +12,10 @@ import { JobModule } from "../Job/job.module";
   controllers: [UserController, CompanyController],
   providers: [UserService],
   imports: [
+    forwardRef(() => JobModule),
     MailModule,
     TypeOrmModule.forFeature([User, JobApplicant]),
     JwtModule,
-    forwardRef(() => JobModule),
   ],
   exports: [UserService],
 })

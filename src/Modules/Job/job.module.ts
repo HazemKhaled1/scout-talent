@@ -7,17 +7,18 @@ import { JobController } from "./job.controller";
 import { UserModule } from "../Users/user.module";
 import { JwtModule } from "@nestjs/jwt";
 import { CVModule } from "../CV/cv.module";
+import { CandidateController } from "./candidate.controller";
 
 
 @Module({
-    controllers:[JobController],
-    providers:[JobServices],
     imports:[
         forwardRef(()=>UserModule),
         JwtModule,
         CVModule,
         TypeOrmModule.forFeature([ Job, JobApplicant])
     ],
+    controllers:[JobController,CandidateController],
+    providers:[JobServices],
     exports:[JobServices]
 })
 export class JobModule{}

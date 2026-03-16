@@ -18,7 +18,6 @@ import { updateUserDTO } from "./dto/updateUser.dto";
 import { updateoraddAboutDTO } from "./dto/update&addAbout.dto";
 import { JobStatus } from "src/Shared/Enums/job.enum";
 import { JobServices } from "../Job/job.service";
-import { CandidateStatus } from "src/Shared/Enums/candidateStatus.enum";
 
 @Controller("company")
 export class CompanyController {
@@ -113,22 +112,4 @@ export class CompanyController {
     return { data };
   }
 
-  @Get("me/jobsApply")
-  @Roles(RoleUser.COMPANY)
-  @UseGuards(AuthGuard)
-  @ApiSecurity("bearer")
-  @ApiQuery({ name: "q", required: false, type: String })
-  @ApiQuery({ name: "s", required: false, enum: CandidateStatus })
-  public async GetAllJobsByCompanyApply(
-    @currentUser() company: JwtPayloadType,
-    @Query("q") q?: string,
-    @Query("s") status?: CandidateStatus,
-  ) {
-    const data = await this.jobService.GetAllJobsByCompanyApply(
-      company.id,
-      q,
-      status,
-    );
-    return { data };
-  }
 }

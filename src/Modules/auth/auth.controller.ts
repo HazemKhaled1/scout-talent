@@ -51,7 +51,7 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @Body() body: loginDTO,
   ) {
-    const { message, accessToken, refreshToken } =
+    const { message, accessToken, refreshToken ,u} =
       await this.authService.login(body);
 
     res.cookie("refreshToken", refreshToken, {
@@ -62,7 +62,7 @@ export class AuthController {
     });
 
     return {
-      data: { message, accessToken },
+      data: { message, accessToken ,user:u},
     };
   }
 

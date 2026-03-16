@@ -106,10 +106,25 @@ export class JobServices {
 
     if (!company) throw new BadRequestException("please try again");
 
-    const jobsApply = this.jobApplicantRepository
+    const jobsApply =this.jobApplicantRepository
       .createQueryBuilder("jobApply")
-      .leftJoinAndSelect("jobApply.job", "job")
-      .where("job.companyId = :companyId", { companyId });
+
+      .leftJoin("jobApply.job", "job")
+      .leftJoin("jobApply.applicant", "applicant")
+
+      .select([
+        "jobApply.id",
+
+        "job.id",
+        "job.title",
+        "job.skills",
+
+        "applicant.id",
+        "applicant.name",
+        "applicant.job_title",
+      ])
+
+      .where("job.companyId = :companyId", { companyId })
 
     if (q) {
       jobsApply.andWhere(
@@ -127,7 +142,7 @@ export class JobServices {
       jobsApply.andWhere("jobApply.status = :status", { status });
     }
 
-    return await jobsApply.getMany();
+    return {jobaApply: await jobsApply.getMany()};
   }
 
   /**
@@ -319,19 +334,16 @@ export class JobServices {
     return jobsApply.getMany();
   }
 
-  public async jobApplicantionByUserByID(
-    userId: string,
-    jobApplyId: string
-  ) {
+  public async jobApplicantionByUserByID(userId: string, jobApplyId: string) {
     const jobApplyById = await this.jobApplicantRepository
-    .createQueryBuilder("jobApply")
-    .leftJoinAndSelect("jobApply.job", "job")
-    .leftJoinAndSelect("job.company", "company")
-    .where(
-      "jobApply.id = :jobApplyId AND jobApply.applicant = :userId",
-      { jobApplyId, userId }
-    )
-    .getOne();
+      .createQueryBuilder("jobApply")
+      .leftJoinAndSelect("jobApply.job", "job")
+      .leftJoinAndSelect("job.company", "company")
+      .where("jobApply.id = :jobApplyId AND jobApply.applicant = :userId", {
+        jobApplyId,
+        userId,
+      })
+      .getOne();
 
     return jobApplyById;
   }

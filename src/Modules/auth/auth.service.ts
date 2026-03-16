@@ -119,7 +119,13 @@ export class AuthService {
 
     await this.userRepository.save(user);
 
-    return { message: "login successful", accessToken, refreshToken };
+    const u = await this.userRepository
+      .createQueryBuilder("user")
+      .select(["user.id", "user.name", "user.email"])
+      .where("user.id = :id", { id: user.id })
+      .getOne();
+
+    return { message: "login successful", accessToken, refreshToken, u };
   }
 
   public async resendEmailVerify(dto: resendEmailVerify) {
@@ -303,9 +309,9 @@ export class AuthService {
       await this.userRepository.save(user);
 
       return {
-          message: "Account created successfully, please choose your role",
-          needRole: true,
-          userId: user.id,
+        message: "Account created successfully, please choose your role",
+        needRole: true,
+        userId: user.id,
       };
     }
     const payload: JwtPayloadType = { id: user.id, role: user.role };
