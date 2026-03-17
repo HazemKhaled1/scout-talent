@@ -14,6 +14,12 @@ import { JobStatus, JobType, WorkMode } from "src/Shared/Enums/job.enum";
 import { jobStatusDTO } from "./dto/statusJob.dto";
 import { HiredDetails } from "./Hired_Details.entity";
 import { HiredDTO } from "./dto/hired.dto";
+import { RejectDTO } from "./dto/reject.dto";
+import { Reject } from "./reject.entity";
+import { InterviewDTO } from "./dto/interview.dto";
+import { Interview } from "./interviews.entity";
+import { JobOfferDTO } from "./dto/jobOffer.dto";
+import { JobOffer } from "./jobOffer.entity";
 @Injectable()
 export class JobServices {
   constructor(
@@ -22,6 +28,11 @@ export class JobServices {
     private jobApplicantRepository: Repository<JobApplicant>,
     @InjectRepository(HiredDetails)
     private hiredRepository: Repository<HiredDetails>,
+    @InjectRepository(Reject) private rejectRepository: Repository<Reject>,
+    @InjectRepository(Interview)
+    private interviewRepository: Repository<Interview>,
+    @InjectRepository(JobOffer)
+    private jobOfferRepository: Repository<JobOffer>,
     private userService: UserService,
     private cvService: CVService,
   ) {}
@@ -266,7 +277,7 @@ export class JobServices {
     };
   }
 
-  public async rejectCV(companyId: string, id: string) {
+  public async rejectCV(companyId: string, id: string, dto: RejectDTO) {
     const jobApplicantion = await this.jobApplicantRepository.findOne({
       where: {
         id,
@@ -277,15 +288,26 @@ export class JobServices {
     });
     if (!jobApplicantion) throw new BadRequestException("please try again");
 
+    if (jobApplicantion.status === CandidateStatus.REJECTED) {
+      throw new BadRequestException("status of candidate is already rejected");
+    }
     jobApplicantion.status = CandidateStatus.REJECTED;
     jobApplicantion.rejectAt = new Date();
     const jobApp = await this.jobApplicantRepository.save(jobApplicantion);
+
+    const reject = this.rejectRepository.create({
+      reason: dto.reason,
+      application: jobApp,
+    });
+
+    await this.rejectRepository.save(reject);
 
     return {
       message: "convert cadidate status to rejected successful",
       jobApp: {
         id: jobApp.id,
         status: jobApp.status,
+        reason: reject.reason,
         rejectAt: jobApp.rejectAt,
       },
     };
@@ -302,6 +324,9 @@ export class JobServices {
     });
     if (!jobApplicantion) throw new BadRequestException("please try again");
 
+    if (jobApplicantion.status === CandidateStatus.HIRED) {
+      throw new BadRequestException("status of candidate is already hired");
+    }
     const { startDate } = dto;
 
     jobApplicantion.status = CandidateStatus.HIRED;
@@ -323,6 +348,87 @@ export class JobServices {
         startDate: nHired.startDate,
       },
     };
+  }
+
+  public async interviewCV(companyId: string, id: string, dto: InterviewDTO) {
+    const jobApplicantion = await this.jobApplicantRepository.findOne({
+      where: {
+        id,
+        job: {
+          company: { id: companyId },
+        },
+      },
+    });
+    if (!jobApplicantion) throw new BadRequestException("please try again");
+
+    const { type, scheduledAt, meetingLink } = dto;
+
+    jobApplicantion.status = CandidateStatus.INTERVIEW;
+    jobApplicantion.hiredAt = new Date();
+    const jobApp = await this.jobApplicantRepository.save(jobApplicantion);
+
+    const interview = this.interviewRepository.create({
+      type,
+      scheduledAt,
+      meetingLink,
+      application: jobApp,
+    });
+
+    await this.interviewRepository.save(interview);
+
+    return {
+      message: "convert cadidate status to interview successful",
+      data: {
+        id: jobApp.id,
+        status: jobApp.status,
+        interviewtype: interview.type,
+        meetingLink,
+        interviewAt: jobApp.hiredAt,
+      },
+    };
+  }
+
+  public async jobOffer(companyId: string, id: string, dto: JobOfferDTO) {
+    const jobApplicantion = await this.jobApplicantRepository.findOne({
+      where: {
+        id,
+        job: {
+          company: { id: companyId },
+        },
+      },
+    });
+    if (!jobApplicantion) throw new BadRequestException("please try again");
+
+    if (jobApplicantion.status === CandidateStatus.OFFERED) {
+      throw new BadRequestException("status of candidate is already offered");
+    }
+
+    jobApplicantion.status = CandidateStatus.OFFERED;
+    jobApplicantion.sendOfferAt = new Date();
+
+    const jobApp = await this.jobApplicantRepository.save(jobApplicantion);
+
+    const {startDate,offeredSalary,notes}=dto
+    const offer = this.jobOfferRepository.create({
+      startDate,
+      offeredSalary,
+      notes,
+      application:jobApp
+    })
+
+    await this.jobOfferRepository.save(offer)
+
+    return{
+      message: "convert cadidate status to interview successful",
+      data:{
+        id:jobApp.id,
+        status:jobApp.status,
+        offeredSalary,
+        startDate,
+        notes,
+        offerAt:jobApp.sendOfferAt
+      }
+    }
   }
 
   public async jobApplicantionByUser(

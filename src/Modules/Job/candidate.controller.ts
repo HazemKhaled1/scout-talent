@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { JobServices } from "./job.service";
 import { Roles } from "src/Shared/decorator/user_role.decorator";
 import { RoleUser } from "src/Shared/Enums/user.enum";
@@ -8,6 +8,9 @@ import { currentUser } from "src/Shared/decorator/currentUser.decorator";
 import type { JwtPayloadType } from "src/Shared/types/JwtPayloadType";
 import { AuthGuard } from "../auth/guards/AuthUser.guard";
 import { HiredDTO } from "./dto/hired.dto";
+import { RejectDTO } from "./dto/reject.dto";
+import { InterviewDTO } from "./dto/interview.dto";
+import { JobOfferDTO } from "./dto/jobOffer.dto";
 
 @Controller("candidate")
 export class CandidateController {
@@ -44,19 +47,20 @@ export class CandidateController {
     return { data };
   }
 
-  @Get("reject/:id")
+  @Post("reject/:id")
   @Roles(RoleUser.COMPANY)
   @UseGuards(AuthGuard)
   @ApiSecurity("bearer")
   public async rejectedCV(
     @currentUser() company: JwtPayloadType,
     @Param("id") id: string,
+    @Body() body:RejectDTO
   ) {
-    const data = await this.jobService.rejectCV(company.id, id);
+    const data = await this.jobService.rejectCV(company.id, id ,body);
     return { data };
   }
 
-  @Get("hire/:id")
+  @Post("hire/:id")
   @Roles(RoleUser.COMPANY)
   @UseGuards(AuthGuard)
   @ApiSecurity("bearer")
@@ -69,4 +73,29 @@ export class CandidateController {
     return { data };
   }
 
+  @Post("interview/:id")
+  @Roles(RoleUser.COMPANY)
+  @UseGuards(AuthGuard)
+  @ApiSecurity("bearer")
+  public async interviewCV(
+    @currentUser() company: JwtPayloadType,
+    @Param("id") id: string,
+    @Body() body:InterviewDTO
+  ) {
+    const data = await this.jobService.interviewCV(company.id, id ,body);
+    return { data };
+  }
+
+  @Post("offer/:id")
+  @Roles(RoleUser.COMPANY)
+  @UseGuards(AuthGuard)
+  @ApiSecurity("bearer")
+  public async offerCV(
+    @currentUser() company: JwtPayloadType,
+    @Param("id") id: string,
+    @Body() body:JobOfferDTO
+  ) {
+    const data = await this.jobService.jobOffer(company.id, id ,body);
+    return { data };
+  }
 }

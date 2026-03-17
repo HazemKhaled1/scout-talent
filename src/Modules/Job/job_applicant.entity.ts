@@ -16,6 +16,7 @@ import { CV } from "../CV/cv.entity";
 import { JobOffer } from "./jobOffer.entity";
 import { HiredDetails } from "./Hired_Details.entity";
 import { Interview } from "./interviews.entity";
+import { Reject } from "./reject.entity";
 
 @Entity({ name: "job_applicant" })
 export class JobApplicant {
@@ -41,7 +42,9 @@ export class JobApplicant {
   @CreateDateColumn({ type: "timestamp", default: () => CURRENT_TIMESTAMP })
   createdAt: Date;
 
-  @OneToOne(() => HiredDetails, (details) => details.application, { eager: true })
+  @OneToOne(() => HiredDetails, (details) => details.application, {
+    eager: true,
+  })
   hiredDetails: HiredDetails;
 
   @Column({ type: "timestamp", nullable: true, default: null })
@@ -50,17 +53,24 @@ export class JobApplicant {
   @Column({ type: "timestamp", nullable: true, default: null })
   screenAt: Date;
 
-  @OneToOne(() => JobOffer, (offer) => offer.application,{ eager: true })
+  @OneToOne(() => JobOffer, (offer) => offer.application, { eager: true })
   offer: JobOffer;
 
   @Column({ type: "timestamp", nullable: true, default: null })
   sendOfferAt: Date;
 
-  @OneToMany(() => Interview, (interview) => interview.application, { eager: true })
+  @OneToMany(() => Interview, (interview) => interview.application, {
+    eager: true,
+  })
   interviews: Interview[];
 
   @Column({ type: "timestamp", nullable: true, default: null })
   interviewAt: Date;
+
+  @OneToOne(() => Reject, (reject) => reject.application, {
+    eager: true,
+  })
+  reject: Reject;
 
   @Column({ type: "timestamp", nullable: true, default: null })
   rejectAt: Date;

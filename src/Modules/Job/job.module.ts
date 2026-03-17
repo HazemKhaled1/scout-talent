@@ -11,6 +11,7 @@ import { CandidateController } from "./candidate.controller";
 import { HiredDetails } from "./Hired_Details.entity";
 import { Interview } from "./interviews.entity";
 import { JobOffer } from "./jobOffer.entity";
+import { Reject } from "./reject.entity";
 
 
 @Module({
@@ -18,7 +19,7 @@ import { JobOffer } from "./jobOffer.entity";
         forwardRef(()=>UserModule),
         JwtModule,
         CVModule,
-        TypeOrmModule.forFeature([ Job, JobApplicant, HiredDetails ,Interview ,JobOffer])
+        TypeOrmModule.forFeature([ Job, JobApplicant, HiredDetails ,Interview ,JobOffer ,Reject])
     ],
     controllers:[JobController,CandidateController],
     providers:[JobServices],
