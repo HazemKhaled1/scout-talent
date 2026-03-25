@@ -4,9 +4,11 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   ManyToOne,
+  OneToMany,
 } from "typeorm";
 import { CURRENT_TIMESTAMP } from "src/Shared/constants/variables";
 import { User } from "../Users/user.entity";
+import { JobApplicant } from "../Job/job_applicant.entity";
 
 @Entity({ name: "CV" })
 export class CV {
@@ -24,4 +26,7 @@ export class CV {
 
   @ManyToOne(() => User, (user) => user.Cvs)
   applicant: User;
+
+  @OneToMany(() => JobApplicant, (app) => app.cv)
+  applications: JobApplicant[];
 }

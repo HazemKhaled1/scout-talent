@@ -7,6 +7,7 @@ import {
   PrimaryGeneratedColumn,
   JoinColumn,
   OneToMany,
+  Unique,
 } from "typeorm";
 import { Job } from "./job.entity";
 import { User } from "../Users/user.entity";
@@ -19,6 +20,7 @@ import { Interview } from "./interviews.entity";
 import { Reject } from "./reject.entity";
 
 @Entity({ name: "job_applicant" })
+@Unique(["job", "applicant"])
 export class JobApplicant {
   @PrimaryGeneratedColumn("uuid")
   id: string;
@@ -29,22 +31,20 @@ export class JobApplicant {
   @Column()
   about: string;
 
-  @ManyToOne(() => Job, (job) => job.applicants, { eager: true })
+  @ManyToOne(() => Job, (job) => job.applicants)
   job: Job;
 
-  @ManyToOne(() => User, (user) => user.jobApplicant, { eager: true })
+  @ManyToOne(() => User, (user) => user.jobApplicant)
   applicant: User;
 
-  @OneToOne(() => CV, { eager: true })
+  @ManyToOne(() => CV)
   @JoinColumn()
   cv: CV;
 
   @CreateDateColumn({ type: "timestamp", default: () => CURRENT_TIMESTAMP })
   createdAt: Date;
 
-  @OneToOne(() => HiredDetails, (details) => details.application, {
-    eager: true,
-  })
+  @OneToOne(() => HiredDetails, (details) => details.application)
   hiredDetails: HiredDetails;
 
   @Column({ type: "timestamp", nullable: true, default: null })
@@ -53,23 +53,19 @@ export class JobApplicant {
   @Column({ type: "timestamp", nullable: true, default: null })
   screenAt: Date;
 
-  @OneToOne(() => JobOffer, (offer) => offer.application, { eager: true })
+  @OneToOne(() => JobOffer, (offer) => offer.application)
   offer: JobOffer;
 
   @Column({ type: "timestamp", nullable: true, default: null })
   sendOfferAt: Date;
 
-  @OneToMany(() => Interview, (interview) => interview.application, {
-    eager: true,
-  })
+  @OneToMany(() => Interview, (interview) => interview.application)
   interviews: Interview[];
 
   @Column({ type: "timestamp", nullable: true, default: null })
   interviewAt: Date;
 
-  @OneToOne(() => Reject, (reject) => reject.application, {
-    eager: true,
-  })
+  @OneToOne(() => Reject, (reject) => reject.application)
   reject: Reject;
 
   @Column({ type: "timestamp", nullable: true, default: null })

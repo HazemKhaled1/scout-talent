@@ -10,6 +10,8 @@ import { HiredDetails } from "src/Modules/Job/Hired_Details.entity";
 import { Interview } from "src/Modules/Job/interviews.entity";
 import { JobOffer } from "src/Modules/Job/jobOffer.entity";
 import { Reject } from "src/Modules/Job/reject.entity";
+import { FeedBack } from "src/Modules/Job/feedback.entity";
+import { CancelInterview } from "src/Modules/Job/cancelInterview.entity";
 config({ path: ".env" });
 
 export const dataSourceOptions: DataSourceOptions = {
@@ -25,7 +27,9 @@ export const dataSourceOptions: DataSourceOptions = {
     HiredDetails,
     Interview,
     JobOffer,
-    Reject
+    Reject,
+    FeedBack,
+    CancelInterview
   ],
   migrations: ["dist/db/migrations/*.js"],
 };

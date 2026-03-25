@@ -66,12 +66,10 @@ export class User {
   @OneToMany(() => CV, (cv) => cv.applicant)
   Cvs: CV[];
 
-  @OneToMany(() => SkillOrSpecializations, (s) => s.userORcompany, {
-    eager: true,
-  })
+  @OneToMany(() => SkillOrSpecializations, (s) => s.userORcompany)
   skillsORspecializations: SkillOrSpecializations[];
 
-  @OneToMany(() => Experience, (experience) => experience.user, { eager: true })
+  @OneToMany(() => Experience, (experience) => experience.user)
   experience: Experience[];
 
   @OneToMany(() => JobApplicant, (jobApplicant) => jobApplicant.job)

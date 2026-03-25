@@ -1,51 +1,57 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsArray, IsNumber, IsString } from "class-validator";
-import { JobStatus,JobType,WorkMode } from "src/Shared/Enums/job.enum"; 
+import { JobStatus, JobType, WorkMode } from "src/Shared/Enums/job.enum";
 
+export class addJobDTO {
+  @IsString()
+  @ApiProperty()
+  title: string;
 
-export class addJobDTO{
+  @IsString()
+  @ApiProperty()
+  location: string;
 
-    @IsString()
-    @ApiProperty()
-    title: string;
+  @IsNumber()
+  @ApiProperty()
+  minSalary: number;
 
-    @IsString()
-    @ApiProperty()
-    location: string;
+  @IsNumber()
+  @ApiProperty()
+  maxSalary: number;
 
-    @IsNumber()
-    @ApiProperty()
-    minSalary: number;
+  @IsString()
+  @ApiProperty()
+  type: JobType;
 
-    @IsNumber()
-    @ApiProperty()
-    maxSalary: number;
+  @IsString()
+  @ApiProperty()
+  status: JobStatus;
 
-    @IsString()
-    @ApiProperty()
-    type: JobType;
+  @IsString()
+  @ApiProperty()
+  workMode: WorkMode;
 
-    @IsString()
-    @ApiProperty()
-    status: JobStatus;
+  @IsString()
+  @ApiProperty()
+  description: string;
 
-    @IsString()
-    @ApiProperty()
-    workMode: WorkMode;
+  @IsArray()
+  @ApiProperty()
+  skills: string[];
 
-    @IsString()
-    @ApiProperty()
-    description: string;
+  @IsArray()
+  @ApiProperty()
+  responsibilities: string[];
 
-    @IsArray()
-    @ApiProperty()
-    skills: string[];
+  @IsString()
+  @ApiProperty()
+  requirements: string;
 
-    @IsArray()
-    @ApiProperty()
-    responsibilities: string[];
+  @IsNumber()
+  @ApiProperty()
+  positions: number;
 
-    @IsString()
-    @ApiProperty()
-    requirements: string;
+  @IsNumber()
+  @ApiProperty({ required: false })
+  maxApplications: number;
 }

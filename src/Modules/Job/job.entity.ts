@@ -1,5 +1,5 @@
 import { CURRENT_TIMESTAMP } from "src/Shared/constants/variables";
-import { JobStatus ,WorkMode,JobType } from "src/Shared/Enums/job.enum";
+import { JobStatus, WorkMode, JobType } from "src/Shared/Enums/job.enum";
 import {
   Column,
   CreateDateColumn,
@@ -40,6 +40,12 @@ export class Job {
 
   @Column({ type: "text" })
   description: string;
+
+  @Column({ type: "int" })
+  positions: number;
+
+  @Column({ type: "int", nullable: true })
+  maxApplications: number;
 
   @Column("simple-array", { nullable: true })
   skills: string[];

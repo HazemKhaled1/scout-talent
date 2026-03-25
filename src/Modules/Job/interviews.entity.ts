@@ -1,13 +1,19 @@
 import { CURRENT_TIMESTAMP } from "src/Shared/constants/variables";
-import { InterviewTypes } from "src/Shared/Enums/InterviewTypes.enum";
+import {
+  InterviewStatus,
+  InterviewTypes,
+} from "src/Shared/Enums/Interview.enum";
 import {
   Column,
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { JobApplicant } from "./job_applicant.entity";
+import { FeedBack } from "./feedback.entity";
+import { CancelInterview } from "./cancelInterview.entity";
 
 @Entity("interviews")
 export class Interview {
@@ -21,6 +27,13 @@ export class Interview {
   })
   type: InterviewTypes;
 
+  @Column({
+    type: "enum",
+    enum: InterviewStatus,
+    default: InterviewStatus.SCHEDULED,
+  })
+  status: InterviewStatus;
+
   @Column({ type: "timestamp" })
   scheduledAt: Date;
 
@@ -32,4 +45,10 @@ export class Interview {
 
   @ManyToOne(() => JobApplicant, (application) => application.interviews)
   application: JobApplicant;
+
+  @OneToOne(() => FeedBack, (feedback) => feedback.interview)
+  feedback: FeedBack;
+
+  @OneToOne(() => CancelInterview, (cancel) => cancel.interview)
+  CancelInterview: CancelInterview;
 }

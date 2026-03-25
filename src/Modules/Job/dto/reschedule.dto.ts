@@ -1,13 +1,8 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import { IsDate, IsString, MinDate } from "class-validator";
-import { InterviewTypes } from "src/Shared/Enums/Interview.enum";
 
-export class InterviewDTO {
-  @IsString()
-  @ApiProperty()
-  type: InterviewTypes;
-
+export class rescheduleDTO {
   @Type(() => Date)
   @IsDate()
   @MinDate(new Date(), { message: 'the scheduled date must be in the future' })

@@ -56,6 +56,8 @@ export class JobServices {
       type,
       workMode,
       responsibilities,
+      positions,
+      maxApplications,
     } = dto;
 
     const user = await this.userService.findUser(companyId);
@@ -75,6 +77,8 @@ export class JobServices {
       skills,
       responsibilities,
       company: user,
+      positions,
+      maxApplications,
     });
 
     await this.jobRepository.save(Njob);
@@ -129,6 +133,7 @@ export class JobServices {
 
       .select([
         "jobApply.id",
+        "jobApply.status",
 
         "job.id",
         "job.title",
@@ -263,16 +268,28 @@ export class JobServices {
       throw new BadRequestException("status of candidate is already screening");
     }
 
-    jobApplicantion.status = CandidateStatus.SCREENING;
-    jobApplicantion.screenAt = new Date();
-    const jobApp = await this.jobApplicantRepository.save(jobApplicantion);
+    if (jobApplicantion.status === CandidateStatus.NEW) {
+      jobApplicantion.status = CandidateStatus.SCREENING;
+      jobApplicantion.screenAt = new Date();
 
+      const jobApp = await this.jobApplicantRepository.save(jobApplicantion);
+
+      return {
+        message: "convert candidate status to screening successful",
+        jobApp: {
+          id: jobApp.id,
+          status: jobApp.status,
+          screenAt: jobApp.screenAt,
+        },
+      };
+    }
     return {
-      message: "convert candidate status to screening successful",
+      message:
+        "can't convert candidate status to screening, check candidate status",
       jobApp: {
-        id: jobApp.id,
-        status: jobApp.status,
-        screenAt: jobApp.screenAt,
+        id: jobApplicantion.id,
+        status: jobApplicantion.status,
+        screenAt: jobApplicantion.screenAt,
       },
     };
   }
@@ -291,6 +308,11 @@ export class JobServices {
     if (jobApplicantion.status === CandidateStatus.REJECTED) {
       throw new BadRequestException("status of candidate is already rejected");
     }
+
+    if (jobApplicantion.status === CandidateStatus.HIRED) {
+      throw new BadRequestException("this applicantion is hired, can't reject");
+    }
+
     jobApplicantion.status = CandidateStatus.REJECTED;
     jobApplicantion.rejectAt = new Date();
     const jobApp = await this.jobApplicantRepository.save(jobApplicantion);
@@ -300,14 +322,14 @@ export class JobServices {
       application: jobApp,
     });
 
-    await this.rejectRepository.save(reject);
+    const Nreject = await this.rejectRepository.save(reject);
 
     return {
       message: "convert cadidate status to rejected successful",
       jobApp: {
         id: jobApp.id,
         status: jobApp.status,
-        reason: reject.reason,
+        reason: Nreject.reason,
         rejectAt: jobApp.rejectAt,
       },
     };
@@ -327,25 +349,33 @@ export class JobServices {
     if (jobApplicantion.status === CandidateStatus.HIRED) {
       throw new BadRequestException("status of candidate is already hired");
     }
+
+    if (!(jobApplicantion.status === CandidateStatus.OFFERED)) {
+      throw new BadRequestException(
+        `the candidate status ${jobApplicantion.status}, can't hired`,
+      );
+    }
+
     const { startDate } = dto;
 
     jobApplicantion.status = CandidateStatus.HIRED;
     jobApplicantion.hiredAt = new Date();
-    await this.jobApplicantRepository.save(jobApplicantion);
+    const jobApply = await this.jobApplicantRepository.save(jobApplicantion);
 
     const nHired = this.hiredRepository.create({
       startDate,
       application: jobApplicantion,
     });
 
-    await this.hiredRepository.save(nHired);
+    const Nhired = await this.hiredRepository.save(nHired);
+
     return {
       message: "convert cadidate status to hired successful",
       date: {
-        id: jobApplicantion.id,
-        status: jobApplicantion.status,
-        hiredAt: jobApplicantion.hiredAt,
-        startDate: nHired.startDate,
+        id: jobApply.id,
+        status: jobApply.status,
+        hiredAt: jobApply.hiredAt,
+        startDate: Nhired.startDate,
       },
     };
   }
@@ -361,10 +391,26 @@ export class JobServices {
     });
     if (!jobApplicantion) throw new BadRequestException("please try again");
 
+    if (
+      !(
+        jobApplicantion.status === CandidateStatus.SCREENING ||
+        jobApplicantion.status === CandidateStatus.INTERVIEW
+      )
+    ) {
+      throw new BadRequestException(
+        `can't interview ,the candidate status is ${jobApplicantion.status}`,
+      );
+    }
     const { type, scheduledAt, meetingLink } = dto;
 
+    const now = new Date();
+
+    if (dto.scheduledAt <= now) {
+      throw new BadRequestException("the scheduled date must be in the future");
+    }
+
     jobApplicantion.status = CandidateStatus.INTERVIEW;
-    jobApplicantion.hiredAt = new Date();
+    jobApplicantion.interviewAt = new Date();
     const jobApp = await this.jobApplicantRepository.save(jobApplicantion);
 
     const interview = this.interviewRepository.create({
@@ -374,16 +420,18 @@ export class JobServices {
       application: jobApp,
     });
 
-    await this.interviewRepository.save(interview);
+    const Ninterview=await this.interviewRepository.save(interview);
 
     return {
       message: "convert cadidate status to interview successful",
       data: {
-        id: jobApp.id,
+        jobApplyid: jobApp.id,
         status: jobApp.status,
-        interviewtype: interview.type,
+        interviewId:Ninterview.id,
+        interviewtype: type,
+        scheduledAt,
         meetingLink,
-        interviewAt: jobApp.hiredAt,
+        interviewAt: jobApp.interviewAt,
       },
     };
   }
@@ -408,27 +456,27 @@ export class JobServices {
 
     const jobApp = await this.jobApplicantRepository.save(jobApplicantion);
 
-    const {startDate,offeredSalary,notes}=dto
+    const { startDate, offeredSalary, notes } = dto;
     const offer = this.jobOfferRepository.create({
       startDate,
       offeredSalary,
       notes,
-      application:jobApp
-    })
+      application: jobApp,
+    });
 
-    await this.jobOfferRepository.save(offer)
+    await this.jobOfferRepository.save(offer);
 
-    return{
+    return {
       message: "convert cadidate status to interview successful",
-      data:{
-        id:jobApp.id,
-        status:jobApp.status,
+      data: {
+        id: jobApp.id,
+        status: jobApp.status,
         offeredSalary,
         startDate,
         notes,
-        offerAt:jobApp.sendOfferAt
-      }
-    }
+        offerAt: jobApp.sendOfferAt,
+      },
+    };
   }
 
   public async jobApplicantionByUser(
