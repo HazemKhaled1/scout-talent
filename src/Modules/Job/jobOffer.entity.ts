@@ -8,7 +8,6 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { JobApplicant } from "./job_applicant.entity";
-
 @Entity("jobOffer")
 export class JobOffer {
   @PrimaryGeneratedColumn("uuid")

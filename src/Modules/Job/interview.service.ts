@@ -117,15 +117,19 @@ export class InterviewService {
     }
     const now = new Date();
 
-    if (interview.scheduledAt <= now) {
+    if (new Date(interview.scheduledAt).getTime() <= now.getTime()) {
       throw new BadRequestException(
         "can't reschedule, interview already finished",
       );
     }
-
-    if (dto.scheduledAt <= now) {
+    if (new Date(dto.scheduledAt).getTime() <= now.getTime()) {
       throw new BadRequestException("the scheduled date must be in the future");
     }
+
+    if(interview.scheduledAt.getTime() === dto.scheduledAt.getTime()){
+      throw new BadRequestException("No changes detected in the scheduled interview time.")
+    }
+    await this.checkInterviewConflict(companyId, dto.scheduledAt, 30);
 
     interview.scheduledAt = dto.scheduledAt;
     interview.meetingLink = dto.meetingLink;
@@ -337,5 +341,59 @@ export class InterviewService {
         completed,
       },
     };
+  }
+
+  private async checkInterviewConflict(
+    companyId: string,
+    scheduledAt: Date,
+    durationMin: number,
+  ) {
+    const start = new Date(scheduledAt);
+    const end = new Date(start.getTime() + durationMin * 60000);
+
+    const conflict = await this.interviewRepository
+      .createQueryBuilder("interview")
+      .leftJoin("interview.application", "application")
+      .leftJoin("application.job", "job")
+      .leftJoin("job.company", "company")
+      .where("company.id= :companyId", { companyId })
+      .andWhere(
+        `
+          interview.scheduledAt < :end
+          AND interview.scheduledAt + (:duration * interval '1 minute') > :start
+        `,
+        {
+          start,
+          end,
+          duration: durationMin,
+        },
+      )
+      .getOne();
+
+    console.log(conflict);
+    if (conflict) {
+      const formattedStart = new Date(conflict.scheduledAt).toLocaleString(
+        "en-EG",
+        { timeZone: "Africa/Cairo" },
+      );
+
+      const formattedEnd = new Date(
+        conflict.scheduledAt.getTime() + durationMin * 60000,
+      ).toLocaleString("en-EG", {
+        timeZone: "Africa/Cairo",
+      });
+
+      const newSelectedTime = new Date(scheduledAt).toLocaleString("en-EG", {
+        timeZone: "Africa/Cairo",
+      });
+
+      throw new BadRequestException({
+        message: "Interview time conflict",
+        details: {
+          message: `An interview is already scheduled from ${formattedStart} to ${formattedEnd}. The time you selected (${newSelectedTime}) overlaps with it. Please choose another available time.`,
+        },
+      });
+    }
+    return true;
   }
 }
