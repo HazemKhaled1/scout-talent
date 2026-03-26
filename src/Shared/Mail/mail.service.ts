@@ -1,26 +1,40 @@
 import { Injectable } from "@nestjs/common";
-import { MailerService } from "@nestjs-modules/mailer";
+import sgMail from "@sendgrid/mail";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class MailService {
-  constructor(private mailservice: MailerService) {}
-
-  public async sendVerifyEmail(email: string, link: string) {
-    await this.mailservice.sendMail({
-      to: email,
-      from: "sount talent",
-      subject: "verify email",
-      template: "verify_email",
-      context: { link },
-    });
+  constructor(private config: ConfigService) {
+    sgMail.setApiKey(this.config.get<string>("SENDGRID_API_KEY")!);
   }
-  public async sendResetPassword(email: string, link: string) {
-    await this.mailservice.sendMail({
+
+  // Verify Email
+  public async sendVerifyEmail(email: string, link: string) {
+    const msg = {
       to: email,
-      from: "sount talent",
-      subject: "Reset Password",
-      template: "reset_password",
-      context: { link },
-    });
+      from: this.config.get<string>("SENDGRID_FROM_EMAIL")!,
+      templateId: this.config.get<string>("SENDGRID_VERIFY_TEMPLATE_ID")!,
+      subject: "Verify Your Email – Hakeem Scout Talent",
+      dynamicTemplateData: {
+        link,
+      },
+    };
+
+    return await sgMail.send(msg);
+  }
+
+  // Reset Password
+  public async sendResetPassword(email: string, link: string) {
+    const msg = {
+      to: email,
+      from: this.config.get<string>("SENDGRID_FROM_EMAIL")!,
+      subject: "Reset Your Password – Hakeem Scout Talent", 
+      templateId: this.config.get<string>("SENDGRID_RESET_TEMPLATE_ID")!,
+      dynamicTemplateData: {
+        link,
+      },
+    };
+
+    return await sgMail.send(msg);
   }
 }

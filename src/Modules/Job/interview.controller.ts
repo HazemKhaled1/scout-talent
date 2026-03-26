@@ -17,6 +17,7 @@ import { completeInterviewDTO } from "./dto/completeInterview.dto";
 import { rescheduleDTO } from "./dto/reschedule.dto";
 import { cancelInterviewDTO } from "./dto/cancelInterview.dto";
 import { CancelBy } from "src/Shared/Enums/interviewCancel.enum";
+import { ApiSecurity } from "@nestjs/swagger";
 
 @Controller("interview")
 export class InterviewController {
@@ -25,6 +26,7 @@ export class InterviewController {
   @Get("company")
   @Roles(RoleUser.COMPANY)
   @UseGuards(AuthGuard)
+  @ApiSecurity("bearer")
   public allInterviewWithCompany(@currentUser() user: JwtPayloadType) {
     return this.interviewService.getAllInterviewWithCompany(user.id);
   }
@@ -32,6 +34,7 @@ export class InterviewController {
   @Post("complete/:interviewId")
   @Roles(RoleUser.COMPANY)
   @UseGuards(AuthGuard)
+  @ApiSecurity("bearer")
   public completeInterview(
     @currentUser() user: JwtPayloadType,
     @Body() body: completeInterviewDTO,
@@ -43,6 +46,7 @@ export class InterviewController {
   @Patch("reschedule/:interviewId")
   @Roles(RoleUser.COMPANY)
   @UseGuards(AuthGuard)
+  @ApiSecurity("bearer")
   public rescheduleInterview(
     @Param("interviewId") interviewId: string,
     @Body() body: rescheduleDTO,
@@ -58,6 +62,7 @@ export class InterviewController {
   @Post("cancel/:interviewId")
   @Roles(RoleUser.APPLICANT, RoleUser.COMPANY)
   @UseGuards(AuthGuard)
+  @ApiSecurity("bearer")
   public cancelInterview(
     @Param("interviewId") interviewId: string,
     @currentUser() user: JwtPayloadType,
@@ -78,6 +83,7 @@ export class InterviewController {
   @Get("applicant")
   @Roles(RoleUser.APPLICANT)
   @UseGuards(AuthGuard)
+  @ApiSecurity("bearer")
   public allInterviewByApplicant(@currentUser() user: JwtPayloadType) {
     return this.interviewService.getApplicantInterviews(user.id);
   }
@@ -85,6 +91,7 @@ export class InterviewController {
   @Get('company/stats')
   @Roles(RoleUser.COMPANY)
   @UseGuards(AuthGuard)
+  @ApiSecurity("bearer")
   public interviewStatsWithCompany(@currentUser() user: JwtPayloadType){
     return this.interviewService.getInterviewStatsWithCompany(user.id)
   }
@@ -92,6 +99,7 @@ export class InterviewController {
   @Get('applicant/stats')
   @Roles(RoleUser.APPLICANT)
   @UseGuards(AuthGuard)
+  @ApiSecurity("bearer")
   public interviewStatsWithApplicant(@currentUser() user: JwtPayloadType){
     return this.interviewService.getInterviewStatsWithApplicant(user.id)
   }
