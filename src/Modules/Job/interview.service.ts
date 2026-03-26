@@ -28,21 +28,40 @@ export class InterviewService {
   ) {}
 
   public async getAllInterviewWithCompany(companyId: string) {
-    const interviews = await this.interviewRepository.find({
-      where: {
-        application: {
-          job: {
-            company: {
-              id: companyId,
-            },
-          },
-        },
-      },
-      relations: ["feedback", "CancelInterview"],
-    });
+    const interviews = await this.interviewRepository
+      .createQueryBuilder("interview")
+      .leftJoin("interview.application", "application")
+      .leftJoin("application.job", "job")
+      .leftJoin("job.company", "company")
+      .leftJoin("application.applicant", "applicant")
+      .leftJoinAndSelect("interview.feedback", "feedback")
+      .leftJoinAndSelect("interview.CancelInterview", "cancel")
+
+      .where("company.id = :companyId", { companyId })
+
+      .select([
+        "interview",
+
+        "application",
+        "applicant.id",
+        "applicant.name",
+
+        "job.id",
+        "job.title",
+
+        "feedback",
+
+        "cancel",
+      ])
+
+      .getMany();
 
     if (!interviews) throw new BadRequestException("there is no job interview");
-    return { data: interviews };
+    return {
+      data: {
+        type: interviews,
+      },
+    };
   }
 
   public async completeInterview(
@@ -65,9 +84,9 @@ export class InterviewService {
       throw new BadRequestException("this interview is cancel");
     }
 
-    const now = new Date();
+    const now = Date.now();
 
-    if (interview.scheduledAt > now) {
+    if ((new Date(interview.scheduledAt).getTime()) > now) {
       throw new BadRequestException("Interview is not finished yet");
     }
 
@@ -126,8 +145,10 @@ export class InterviewService {
       throw new BadRequestException("the scheduled date must be in the future");
     }
 
-    if(interview.scheduledAt.getTime() === dto.scheduledAt.getTime()){
-      throw new BadRequestException("No changes detected in the scheduled interview time.")
+    if (interview.scheduledAt.getTime() === dto.scheduledAt.getTime()) {
+      throw new BadRequestException(
+        "No changes detected in the scheduled interview time.",
+      );
     }
     await this.checkInterviewConflict(companyId, dto.scheduledAt, 30);
 
@@ -186,7 +207,7 @@ export class InterviewService {
     });
     if (!interview) throw new BadRequestException("there is no interview");
 
-    if (!(interview.status === InterviewStatus.CANCELLED)) {
+    if (interview.status === InterviewStatus.CANCELLED) {
       throw new BadRequestException(`this interview already cancel`);
     }
     interview.status = InterviewStatus.CANCELLED;
@@ -220,10 +241,34 @@ export class InterviewService {
   }
 
   public async getApplicantInterviews(applicantId: string) {
-    const interviews = await this.interviewRepository.find({
-      where: { application: { applicant: { id: applicantId } } },
-      relations: ["feedback", "CancelInterview"],
-    });
+    const interviews = await this.interviewRepository
+      .createQueryBuilder("interview")
+      .leftJoin("interview.application", "application")
+      .leftJoin("application.job", "job")
+      .leftJoin("job.company", "company")
+      .leftJoin("application.applicant", "applicant")
+      .leftJoinAndSelect("interview.feedback", "feedback")
+      .leftJoinAndSelect("interview.CancelInterview", "cancel")
+
+      .where("applicant.id = :applicantId", { applicantId })
+
+      .select([
+        "interview",
+
+        "application",
+
+        "job.id",
+        "job.title",
+
+        "company.id",
+        "company.name",
+
+        "feedback",
+
+        "cancel",
+      ])
+
+      .getMany();
 
     if (!interviews)
       throw new BadRequestException("there is no interview for this applicant");
