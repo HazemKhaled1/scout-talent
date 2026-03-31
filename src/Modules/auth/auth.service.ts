@@ -176,11 +176,9 @@ export class AuthService {
   public async resendEmailVerify(dto: resendEmailVerify) {
     const { email } = dto;
 
-    const user = await this.userRepository
-      .createQueryBuilder("user")
-      .addSelect("user.verificationToken")
-      .where("user.email = :email", { email })
-      .getOne();
+    const user = await this.userRepository.findOne({
+      where:{email}
+    })
 
     if (!user)
       throw new BadRequestException("No account found with this email");
@@ -375,7 +373,7 @@ export class AuthService {
    */
   public async resetPassword(dto: resetPasswordDTO, token: string) {
     const record = await this.userTokenRepository.findOne({
-      where: { token, type: UserTokenType.VERIFY_EMAIL },
+      where: { token, type: UserTokenType.RESET_PASSWORD },
       relations: ["user"],
     });
 
